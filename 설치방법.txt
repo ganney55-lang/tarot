@@ -1,0 +1,16 @@
+AI TAROT 태블릿 설치버전
+
+구성
+- index.html : AI TAROT 프로그램
+- manifest.json : 홈 화면 앱 설치 설정
+- icon.svg : AI TAROT 홈 화면 아이콘
+
+Android 태블릿
+1. 이 폴더의 파일을 HTTPS 웹주소에서 제공합니다.
+2. Chrome에서 index.html을 엽니다.
+3. Chrome 메뉴(⋮) → '앱 설치' 또는 '홈 화면에 추가'를 선택합니다.
+4. 홈 화면의 AI TAROT 아이콘으로 실행합니다.
+
+주의
+로컬 file:// 주소에서는 브라우저에 따라 PWA 설치가 제한될 수 있습니다.
+이 버전은 APK가 아니라 PWA(웹앱) 설치 버전입니다.
