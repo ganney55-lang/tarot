@@ -685,13 +685,6 @@ button:disabled {
     }
 }
 </style>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#17121f">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="icon" href="icon.svg">
-
 </head>
 
 <body>
@@ -1236,14 +1229,14 @@ disabled
 📋 AI 질문 만들기
 </button>
 
-<button
-id="localAnswerButton"
-class="gold-btn"
-onclick="runLocalAnswer()"
-disabled
->
-✨ 로컬 해석 다시 생성
+<button id="expertButton" class="gold-btn" type="button" onclick="makeCommandPrompt('/EXPERT')">
+전문답변
 </button>
+
+<button id="eli10Button" class="gold-btn" type="button" onclick="makeCommandPrompt('/ELI10')">
+간편답변
+</button>
+
 
 </div>
 
@@ -1629,59 +1622,6 @@ function updateTime() {
 /* =====================================================
    위치
 ===================================================== */
-function getCurrentLocation() {
-
-    if (!navigator.geolocation) {
-        alert("이 기기에서는 위치 기능을 사용할 수 없습니다.");
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-        function(position) {
-
-            // 위치 권한 허용
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-
-            console.log("위도:", lat);
-            console.log("경도:", lon);
-
-            alert(
-                "현재 위치 확인 완료\n" +
-                "위도: " + lat + "\n" +
-                "경도: " + lon
-            );
-        },
-
-        function(error) {
-
-            // 위치 권한 거부 또는 오류
-            if (error.code === 1) {
-                alert(
-                    "📍 위치 권한이 거부되었습니다.\n\n" +
-                    "태블릿의 브라우저 사이트 설정에서\n" +
-                    "위치 권한을 '허용'으로 변경해주세요."
-                );
-
-            } else if (error.code === 2) {
-                alert("현재 위치를 확인할 수 없습니다.");
-
-            } else if (error.code === 3) {
-                alert("위치 확인 시간이 초과되었습니다.");
-
-            } else {
-                alert("위치 정보를 가져올 수 없습니다.");
-            }
-        },
-
-        {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 300000
-        }
-    );
-}
-
 
 function getCurrentLocation() {
 
@@ -1699,28 +1639,7 @@ function getCurrentLocation() {
         return;
 
     }
-navigator.geolocation.getCurrentPosition(
-    position => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
 
-        // lat/lon으로 날씨 조회
-    },
-    error => {
-        if (error.code === 1) {
-            alert("위치 권한이 거부되었습니다.");
-        } else if (error.code === 2) {
-            alert("현재 위치를 확인할 수 없습니다.");
-        } else if (error.code === 3) {
-            alert("위치 확인 시간이 초과되었습니다.");
-        }
-    },
-    {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000
-    }
-);
     navigator.geolocation.getCurrentPosition(
 
         async position => {
@@ -1923,9 +1842,6 @@ function createCards() {
     document.getElementById("result").innerHTML = "";
 
     document.getElementById("gptButton").disabled = true;
-
-    const localButton = document.getElementById("localAnswerButton");
-    if (localButton) localButton.disabled = true;
 
     document.getElementById("searchButton").disabled = true;
 
@@ -3023,272 +2939,6 @@ function getWeatherConstraint() {
 }
 
 
-
-/* =====================================================
-   ★ LOCAL ANSWER ENGINE v2 — API 없이 답변 다양화
-   [사용자 수정 핵심 영역]
-   - 아래 LOCAL_DATA의 키워드/후보/문장을 추가하면 답변 범위가 넓어집니다.
-   - API/서버 없이 브라우저에서만 작동합니다.
-===================================================== */
-
-const LOCAL_ENGINE_VERSION = "2.0";
-
-// [수정 1] 분야별 실제 후보를 추가하세요.
-const LOCAL_DATA = {
-    "여행·장소": {
-        keywords: ["여행","관광","여행지","어디","놀러","방문","코스","야경","관광지","쇼핑","온천","테마파크"],
-        candidates: {
-            관광: ["대표 관광지", "역사·문화 명소", "전망 좋은 장소"],
-            먹거리: ["현지 대표 음식", "시장 먹거리", "지역 특색 메뉴"],
-            야경: ["전망대 야경", "번화가 야간 산책", "야간 명소"],
-            쇼핑: ["대형 쇼핑몰", "전통시장", "지역 상권"],
-            체험: ["체험형 관광", "온천·스파", "테마파크"]
-        }
-    },
-    "음식": {
-        keywords: ["먹","밥","음식","메뉴","점심","저녁","아침","식사","맛집","간식","디저트"],
-        candidates: {
-            한식: ["비빔밥", "불고기", "김치찌개", "제육볶음"],
-            면: ["칼국수", "냉면", "우동", "라멘"],
-            국물: ["순대국", "설렁탕", "부대찌개", "쌀국수"],
-            간단식: ["김밥", "샌드위치", "돈가스", "덮밥"],
-            디저트: ["빙수", "와플", "아이스크림", "베이커리"]
-        }
-    },
-    "영화·영상": {
-        keywords: ["영화","드라마","넷플릭스","볼까","감상","애니","시리즈"],
-        candidates: {
-            액션: ["액션 영화", "범죄 스릴러", "SF 영화"],
-            감성: ["로맨스 영화", "휴먼 드라마", "감성 애니메이션"],
-            가벼움: ["코미디 영화", "가벼운 드라마", "가족 영화"]
-        }
-    },
-    "패션": {
-        keywords: ["옷","의류","패션","코디","입을","착용","원피스","바지","셔츠","신발"],
-        candidates: {
-            캐주얼: ["셔츠 + 데님 + 스니커즈", "맨투맨 + 와이드 팬츠"],
-            깔끔: ["셔츠 + 슬랙스", "니트 + 슬랙스"],
-            포인트: ["컬러 포인트 상의 + 기본 하의", "재킷 + 데님"]
-        }
-    },
-    "상품 선택": {
-        keywords: ["살까","구매","제품","상품","노트북","휴대폰","태블릿","살것","가격","가성비"],
-        candidates: {
-            가성비: ["검증된 중급형 제품", "이전 세대 할인 모델"],
-            성능: ["상위 성능 모델", "장기 사용을 고려한 제품"],
-            보수적: ["AS와 호환성이 좋은 제품", "후기가 많은 검증 제품"]
-        }
-    },
-    "행동 선택": {
-        keywords: ["할까","해야","뭐하지","무엇을","지금 할","갈까","볼까","먹을까"],
-        candidates: {
-            활동: ["가벼운 외출", "산책", "취미 활동"],
-            휴식: ["휴식", "영화 감상", "카페·실내 활동"]
-        }
-    }
-};
-
-// [수정 2] 같은 의미의 질문에 사용할 문장 재료를 추가하세요.
-const LOCAL_PHRASES = {
-    opening: [
-        "이번 질문에서는 선택 자체보다 지금 상황에 어떤 방향이 더 잘 맞는지가 핵심입니다.",
-        "카드의 흐름과 현재 질문을 함께 보면 한 가지 방향이 조금 더 선명합니다.",
-        "이번 리딩은 카드의 상징을 현실적인 선택으로 연결해서 보는 것이 좋겠습니다."
-    ],
-    tarot: [
-        "이 카드는 현재 질문에서",
-        "이 카드의 흐름은 지금 상황에서",
-        "이 카드는 이번 선택에 대해"
-    ],
-    advice: [
-        "따라서 처음부터 범위를 너무 넓히기보다 가장 끌리는 선택부터 확인하는 편이 좋습니다.",
-        "결정을 서두르기보다 실제 이용 가능성과 본인의 만족도를 함께 비교해 보세요.",
-        "카드는 방향을 참고하는 도구이므로 현실적인 조건을 마지막 기준으로 삼는 것이 좋습니다."
-    ],
-    caution: [
-        "다만 카드의 긍정적인 흐름만 보고 무리하게 결정하지는 마세요.",
-        "반대로 주의 카드가 있다고 해서 선택 자체를 부정적으로 단정할 필요도 없습니다.",
-        "현재 정보가 부족한 부분은 실제 운영시간·가격·거리 등을 확인하는 것이 안전합니다."
-    ]
-};
-
-// [수정 3] 사용자가 자주 이어서 묻는 표현입니다.
-const FOLLOWUP_RULES = [
-    { test:/^(그럼|그러면|그렇다면)?\s*(밤|야간|저녁)/i, topic:"야경" },
-    { test:/^(그럼|그러면|그렇다면)?\s*(먹|음식|먹거리|뭐 먹|식사)/i, topic:"먹거리" },
-    { test:/^(그럼|그러면|그렇다면)?\s*(쇼핑|살거|살 것|쇼핑은)/i, topic:"쇼핑" },
-    { test:/^(그럼|그러면|그렇다면)?\s*(어디|관광|볼거|볼 것)/i, topic:"관광" },
-    { test:/^(그럼|그러면|그렇다면)?\s*(하루|일정|코스)/i, topic:"일정" },
-    { test:/^(그럼|그러면|그렇다면)?\s*(비용|가격|얼마|가성비)/i, topic:"비용" }
-];
-
-let conversationMemory = [];
-let localAnswerCounter = 0;
-
-function rememberConversation(question, answer, domain, destination) {
-    conversationMemory.push({
-        question, answer: answer.replace(/<[^>]*>/g," ").slice(0,1200), domain,
-        destination: destination || "", time: Date.now()
-    });
-    if (conversationMemory.length > 8) conversationMemory.shift();
-}
-
-function getPreviousContext() {
-    return conversationMemory.length ? conversationMemory[conversationMemory.length-1] : null;
-}
-
-function detectFollowupTopic(question) {
-    const q = (question || "").trim();
-    for (const rule of FOLLOWUP_RULES) if (rule.test.test(q)) return rule.topic;
-    return "";
-}
-
-function detectQuestionIntent(question) {
-    const q=(question||"").trim();
-    if (/^(그럼|그러면|그렇다면)/.test(q)) return "후속 질문";
-    if (/(갈까|할까|살까|먹을까|볼까|고를까|어떨까|괜찮을까)/.test(q)) return "선택/결정";
-    if (/(추천|뭐 먹|뭐하지|무엇|어디|어떤)/.test(q)) return "추천";
-    if (/(왜|이유|원인)/.test(q)) return "이유/분석";
-    if (/(비용|가격|얼마|가성비)/.test(q)) return "비용";
-    if (/(언제|시간|몇 시|영업)/.test(q)) return "시간";
-    return "정보/해석";
-}
-
-function inferDomain(question) {
-    const q=(question||"").toLowerCase();
-    const prev=getPreviousContext();
-    const explicit=analyzeQuestion(question);
-    if (explicit !== "일반 질문") return explicit;
-    if (prev && (/^(그럼|그러면|그렇다면|그건|그곳|거기는|거기)/.test(q) || detectFollowupTopic(q))) return prev.domain;
-    return "일반 질문";
-}
-
-function inferTopic(question, domain) {
-    const q=(question||"").toLowerCase();
-    const follow=detectFollowupTopic(q);
-    if (follow) return follow;
-    if (domain === "음식") {
-        if (/아침/.test(q)) return "아침식사";
-        if (/점심/.test(q)) return "점심식사";
-        if (/저녁/.test(q)) return "저녁식사";
-        if (/간식|디저트/.test(q)) return "디저트";
-        return "메뉴";
-    }
-    if (domain === "여행·장소") {
-        if (/야경|밤|야간|저녁/.test(q)) return "야경";
-        if (/먹|음식|맛집|식사/.test(q)) return "먹거리";
-        if (/쇼핑|몰|백화점|시장/.test(q)) return "쇼핑";
-        if (/온천|스파/.test(q)) return "체험";
-        if (/일정|코스|하루|2박|3박/.test(q)) return "일정";
-        return "관광";
-    }
-    if (domain === "패션") return /정장|출근|격식/.test(q) ? "깔끔" : /튀|포인트|개성/.test(q) ? "포인트" : "캐주얼";
-    if (domain === "상품 선택") return /가성비|저렴|싸게/.test(q) ? "가성비" : /성능|빠른|게임/.test(q) ? "성능" : "보수적";
-    if (domain === "영화·영상") return /감성|로맨스|눈물/.test(q) ? "감성" : /가볍|웃|코미디/.test(q) ? "가벼움" : "액션";
-    return "기본";
-}
-
-function safeText(s) {
-    return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
-}
-
-function pick(arr, offset=0) {
-    if (!arr || !arr.length) return "";
-    const i=(localAnswerCounter + offset) % arr.length;
-    return arr[i];
-}
-
-function profileSummary(profile) {
-    const bits=[];
-    if(profile.bloodTraits?.length) bits.push(profile.bloodTraits.slice(0,3).join(", "));
-    if(profile.mbtiTraits?.length) bits.push(profile.mbtiTraits.slice(0,4).join(", "));
-    if(profile.zodiacTraits?.length) bits.push(profile.zodiacTraits.slice(0,3).join(", "));
-    return bits.length ? [...new Set(bits.join(", ").split(", ").map(x=>x.trim()))].slice(0,7).join(", ") : "선택된 개인 성향 정보 없음";
-}
-
-function environmentSummary() {
-    const d=getResolvedDestination();
-    const parts=[];
-    if(d?.shortName) parts.push(`목적지 ${d.shortName}`);
-    if(d?.weatherText) parts.push(`날씨 ${d.weatherText}`);
-    if(d?.temperature!=null) parts.push(`${d.temperature}℃`);
-    if(d?.timezone) parts.push(`현지시간 ${formatLocalTime(d.timezone)}`);
-    else if(document.getElementById("useTime")?.checked) parts.push(document.getElementById("currentTime")?.textContent||"");
-    return parts.filter(Boolean).join(" · ") || "현재 환경 정보 없음";
-}
-
-function environmentAdvice() {
-    const d=getResolvedDestination();
-    const weather=d?.weatherText || document.getElementById("weatherMain")?.textContent || "";
-    const late=(d?.timezone && Number(new Intl.DateTimeFormat("en-US",{timeZone:d.timezone,hour:"numeric",hour12:false}).format(new Date())) >= 22);
-    if (/비|소나기|뇌우/.test(weather)) return "현재 비 계열 조건이므로 야외 활동보다 실내 활동을 우선하는 편이 현실적입니다.";
-    if (/눈/.test(weather)) return "눈이 있는 조건이라면 이동거리와 미끄럼 위험을 먼저 확인하는 편이 좋습니다.";
-    if (late) return "현지 시간이 늦은 편이라면 영업시간과 귀가 동선을 먼저 확인하세요.";
-    return "현재 환경에서는 일반적인 활동을 고려하되 실제 영업시간과 이동 가능성을 마지막으로 확인하세요.";
-}
-
-function candidateList(domain, topic, question) {
-    const data=LOCAL_DATA[domain];
-    if (!data) return ["질문에 맞는 구체적인 선택지"];
-    const map=data.candidates || {};
-    if (map[topic]) return map[topic];
-    const q=(question||"").toLowerCase();
-    const key=Object.keys(map).find(k=>q.includes(k.toLowerCase()));
-    if (key) return map[key];
-    return Object.values(map).flat().slice(0,6);
-}
-
-function buildLocalAnswer() {
-    const question=document.getElementById("question").value.trim();
-    const domain=inferDomain(question);
-    const topic=inferTopic(question,domain);
-    const profile=getUserProfile();
-    const destination=getResolvedDestination();
-    const prev=getPreviousContext();
-    const intent=detectQuestionIntent(question);
-    localAnswerCounter++;
-
-    const cardsText=selectedCards.map((c,i)=>({card:c,role:getRole(i)}));
-    const top=cardsText[0]?.card;
-    const flow=cardsText.map(x=>`${x.role} ${x.card.name}`).join(" → ");
-    const candidates=candidateList(domain,topic,question);
-    const unique=[...new Set(candidates)].slice(0,3);
-    const profileText=profileSummary(profile);
-    const destinationText=destination?.shortName || prev?.destination || "";
-
-    let continuity="";
-    if (prev && (/^(그럼|그러면|그렇다면|그건|거기는|거기)/.test(question) || detectFollowupTopic(question))) {
-        continuity=`앞선 대화에서 ${safeText(destinationText || "같은 주제")}를 기준으로 이어지는 질문으로 보고, 이번에는 **${safeText(topic)}**에 초점을 맞추겠습니다.`;
-    }
-
-    let recommendation="";
-    if (["추천","선택/결정","비용"].includes(intent) || /추천|뭐|어디|할까|갈까|살까|먹을까/.test(question)) {
-        recommendation=`<p><strong>⑦ 구체적인 최종 추천</strong></p>` + unique.map((x,i)=>`<p>${["🥇","🥈","🥉"][i]||"•"} <strong>${safeText(x)}</strong><br>카드 흐름과 ${safeText(topic)}라는 현재 관심사를 기준으로 후보를 좁힌 선택입니다. ${safeText(environmentAdvice())}</p>`).join("");
-    }
-
-    const cardParagraph=cardsText.map((x,i)=>{
-        const lead=pick(LOCAL_PHRASES.tarot,i);
-        return `<p><strong>${safeText(x.role)} — ${safeText(x.card.name)}</strong><br>${safeText(lead)} ${safeText(x.card.keywords)}가 작용합니다. ${safeText(x.card.meaning)} ${i===0?"이번 질문에서는 이 카드가 전체 방향을 잡는 출발점이 됩니다.":"앞선 카드와 연결하면 이 흐름을 보완하거나 조정하는 역할로 읽을 수 있습니다."}</p>`;
-    }).join("");
-
-    const answer=`
-    <div class="flow">${safeText(flow || "카드 흐름")}</div>
-    <p><strong>① 질문 분석</strong><br>분야: ${safeText(domain)} · 의도: ${safeText(intent)} · 세부 주제: ${safeText(topic)}${continuity?`<br>${continuity}`:""}</p>
-    <p><strong>② 사용자 성향 분석</strong><br>${safeText(profileText)}${profileText !== "선택된 개인 성향 정보 없음" ? " — 이 성향은 선택지를 고를 때 선호 방향을 조정하는 참고값으로 사용합니다." : ""}</p>
-    <p><strong>③ 타로 카드별 해석</strong></p>${cardParagraph}
-    <p><strong>④ 사용자 성향과 타로의 연결</strong><br>${safeText(makeTraitConnection(profile,domain))}</p>
-    <p><strong>⑤ 현재 환경과의 연결</strong><br>${safeText(environmentSummary())}<br>${safeText(environmentAdvice())}</p>
-    <p><strong>⑥ 전체적인 흐름</strong><br>${safeText(pick(LOCAL_PHRASES.opening))} ${safeText(top?.name||"선택 카드")}의 흐름을 중심으로 보면, 무조건적인 찬반보다 현재 조건에서 만족도가 높은 방향을 좁혀가는 해석이 적합합니다.</p>
-    ${recommendation}
-    <p><strong>⑧ 현실적인 조언</strong><br>${safeText(pick(LOCAL_PHRASES.advice))}</p>
-    <p><strong>⑨ 주의할 점</strong><br>${safeText(pick(LOCAL_PHRASES.caution))}</p>
-    <p><strong>🔑 핵심 메시지</strong><br>${safeText(unique[0] ? `현재 흐름에서는 ${unique[0]} 쪽을 우선 검토해 보는 것이 좋겠습니다.` : "카드가 보여주는 방향을 현실 조건과 함께 비교해 보세요.")}<br><small>※ 타로는 미래를 확정하는 예언이 아니라 선택을 정리하기 위한 참고 해석입니다.</small></p>`;
-
-    rememberConversation(question, answer, domain, destinationText);
-    return answer;
-}
-
-
 /* =====================================================
    통합 해석
 ===================================================== */
@@ -3377,9 +3027,6 @@ function showResults() {
     document.getElementById("gptButton")
         .disabled = false;
 
-    const localButton = document.getElementById("localAnswerButton");
-    if (localButton) localButton.disabled = false;
-
     document.getElementById("searchButton")
         .disabled = false;
 
@@ -3403,18 +3050,6 @@ function refreshCards() {
 
     }
 
-}
-
-
-/* =====================================================
-   로컬 답변 다시 생성
-===================================================== */
-function runLocalAnswer() {
-    if (!document.getElementById("question").value.trim() || !selectedCards.length) {
-        alert("질문과 카드를 먼저 선택하세요.");
-        return;
-    }
-    document.getElementById("result").innerHTML = `<div class="result-card integrated"><h3>✨ 로컬 해석</h3>${makeIntegratedInterpretation()}</div>`;
 }
 
 
@@ -3595,157 +3230,13 @@ ${getWeatherConstraint()}
 
 ⑨ 주의할 점
 
-### [질문 분류 및 직접 답변 우선 규칙]
-
-21. 질문이 타로 해석을 요구하는 형식으로 입력되었더라도, 먼저 사용자의 실제 질문 내용을 독립적으로 분석한다.
-
-22. 질문이 다음과 같은 일반적인 요청에 해당하면 타로식으로 억지 해석하지 말고, 질문의 실제 목적에 맞는 답변을 우선 제공한다.
-
-* 코딩·HTML·CSS·JavaScript·Python 등의 기술 질문
-* 사용 방법을 묻는 질문
-* 오류 해결 질문
-* 단순한 사실 확인 질문
-* 계산 질문
-* 번역·문법 질문
-* 개념 설명 질문
-* 파일 작성·수정 질문
-* 프로그램 제작 요청
-* 특정 기능 구현 요청
-
-23. 질문에 "타로카드 해석을 해주세요"라는 문구가 포함되어 있어도, 사용자 질문 자체가 명확한 실용적 요청이라면 그 실용적 요청을 먼저 답변한다.
-
-24. 질문이 "HTML로 헬로월드 띄우기", "파이썬 실행하는 법", "버튼 만들어줘", "오류 고쳐줘"처럼 명확한 행동이나 결과를 요구하면 이를 불명확한 질문으로 판정하지 않는다.
-
-25. 질문의 목적이 문장에 직접 드러나 있는 경우 "목적이 불명확하다"고 판정하지 않는다.
-    예:
-
-* "HTML로 헬로월드 띄우기" → HTML 화면에 Hello World 표시
-* "버튼을 누르면 날씨 나오게 해줘" → 버튼 클릭으로 날씨 조회 기능 구현
-* "GitHub Pages에 올리는 방법" → GitHub Pages 배포 방법 설명
-* "이 코드 오류 고쳐줘" → 제공된 코드의 오류 수정
-
-26. 질문이 명확한 경우 [질문 품질 검사]에서 단순히 신뢰도 점수를 낮게 주지 말고, 질문에서 직접 확인되는 목표를 명시한다.
-
-27. 질문이 명확한 경우 다음 순서로 판단한다.
-
-[1단계: 질문 유형 판별]
-
-* 정보 질문
-* 방법 질문
-* 제작 요청
-* 수정 요청
-* 문제 해결
-* 선택/비교
-* 추천
-* 여행
-* 음식
-* 쇼핑
-* 일반 대화
-* 타로 상담
-
-[2단계: 사용자가 원하는 결과 판별]
-질문에서 사용자가 최종적으로 얻고 싶은 결과를 한 문장으로 정의한다.
-
-[3단계: 필요한 정보 확인]
-현재 질문만으로 답변할 수 있는지 판단한다.
-
-[4단계: 바로 답변]
-필요한 정보가 충분하면 추가 질문을 하지 말고 바로 답변한다.
-
-[5단계: 추가 질문]
-답변에 반드시 필요한 정보가 실제로 빠진 경우에만 추가 질문한다.
-
-28. "추가 정보가 있으면 더 정확해질 수 있다"는 이유만으로 질문을 되묻지 않는다.
-    답변에 필수적인 정보가 없는 경우에만 추가 질문한다.
-
-29. 질문에 존재하지 않는 목적, 선택지, 장소, 제품, 상황을 임의로 생성하지 않는다.
-
-30. 질문이 하나의 구체적인 작업을 요구하는 경우 해당 작업 자체가 목적이다.
-    예:
-    "HTML로 헬로월드 띄우기"
-    → 목적: HTML에서 Hello World를 표시하는 것
-    → 별도의 목적을 추측하거나 추가 질문하지 않는다.
-
-31. 질문이 짧더라도 의미가 명확하면 "불명확"으로 판정하지 않는다.
-    문장의 길이와 질문의 명확성을 동일하게 취급하지 않는다.
-
-32. 질문에 오타가 있더라도 의미를 명확하게 파악할 수 있으면 정상적인 표현으로 보정하여 이해한다.
-    예:
-    "핼로우 월드" → "Hello World"
-    "만들어줘" → 앞뒤 문맥에 있는 제작 대상을 기준으로 판단
-
-33. 질문이 여러 의미로 해석될 수 있을 때만 가장 가능성이 높은 의미를 선택하되, 그 의미를 사실처럼 단정하지 않는다.
-    필요한 경우:
-    "HTML에서 Hello World를 화면에 표시하는 방법을 묻는 것으로 이해했습니다."
-    처럼 해석을 명시하고 답변한다.
-
-34. 질문의 의미가 완전히 확인되지 않는 경우에는 무조건 질문을 되묻기보다 다음을 우선 적용한다.
-
-* 답변 가능한 부분은 먼저 답변한다.
-* 불확실한 부분만 별도로 표시한다.
-* 추가 정보가 필요한 경우 최소한의 질문 하나만 제시한다.
-
-35. 타로 카드는 실용적인 질문의 실제 답변을 방해해서는 안 된다.
-    예를 들어 "HTML로 Hello World 띄우기"에 은둔자 카드가 나왔다면:
-
-* HTML 작성 방법을 실제로 설명한다.
-* 은둔자는 "혼자 차근차근 확인하고 테스트하라"는 참고적 조언으로만 연결한다.
-* 카드 때문에 HTML과 관계없는 여행, 인간관계, 진로 등을 만들어내지 않는다.
-
-36. 질문이 기술·코딩 관련이면 가능하면 실제 실행 가능한 코드 또는 구체적인 실행 절차를 제공한다.
-
-37. 질문이 "만들어줘", "작성해줘", "코딩해줘"처럼 결과물 제작을 요구하면 설명만 하지 말고 실제 결과물을 제공한다.
-
-38. 질문이 "방법", "어떻게", "띄우기", "실행", "연결", "수정" 등 행동을 나타내는 표현을 포함하면 사용자가 원하는 행동 결과를 우선적으로 파악한다.
-
-39. 질문의 분야가 [일반 질문]으로 분류되더라도 질문 자체가 구체적인 행동을 요구하면 "일반 질문"이라는 이유로 모호하게 처리하지 않는다.
-
-40. [질문 품질 검사]는 질문의 길이가 아니라 "사용자가 원하는 결과를 실제로 파악할 수 있는가"를 기준으로 판정한다.
-
-### [질문 품질 검사 개선 기준]
-
-* 명확한 목표가 있음 → 정상
-* 짧지만 의미가 명확함 → 정상
-* 오타가 있지만 의미 파악 가능 → 정상
-* 문맥상 목표가 명확함 → 정상
-* 여러 의미가 가능하지만 하나의 의미가 우세함 → 우세한 의미로 답변
-* 실제 답변에 필수적인 정보가 없음 → 추가 질문
-* 질문 자체가 완전히 추상적임 → 추가 질문
-* 카드 의미만으로 질문을 만들어야 하는 상황 → 질문을 만들지 말고 불명확하다고 판단
-
-### [답변 우선 원칙]
-
-질문이 명확하면:
-
-"질문 분석 → 실제 답변 → 타로 카드의 참고적 해석"
-
-순서로 답한다.
-
-질문이 불명확하면:
-
-"무엇이 불명확한지 설명 → 필요한 최소 정보 질문 → 카드로 질문 내용을 추측하지 않음"
-
-순서로 답한다.
-
-### [중요한 예외]
-
-타로카드가 선택되어 있다는 이유만으로 모든 질문을 타로 상담 질문으로 변환하지 않는다.
-
-사용자의 실제 질문이 기술 질문이면 기술 질문으로,
-여행 질문이면 여행 질문으로,
-음식 질문이면 음식 질문으로,
-정보 질문이면 정보 질문으로 처리한다.
-
-타로 카드는 사용자의 질문을 대체하는 것이 아니라 질문에 대한 참고적 해석 요소로만 사용한다.
-
-
 마지막:
 
 🔑 핵심 메시지
 
-질문에 대한 가장 현실적인 결론을 위에 선택사항에 고려해 타당한 이유를 제시하고 설명하세요
+질문에 대한 가장 현실적인 결론을 위에 선택사항에 고려해 타당한 이유를 제시하고
 
-
+짧은 문장으로 제시하세요.
 
 선택을 요구하는 질문이라면 핵심 메시지에도 반드시 실제 추천 대상을 넣으세요.
 
@@ -3940,5 +3431,104 @@ document.getElementById("birthYear").value = "";
  
 </script> 
  
+
+<script>
+/* =========================================================
+   /EXPERT /ELI10 AI 질문 생성
+   기존 📋 AI 질문 만들기 버튼은 유지합니다.
+   ✨ 로컬 해석 다시 생성 버튼은 삭제했습니다.
+
+   두 버튼 모두:
+   /AUTOPROMPT /INTENT /CONTEXT /CONSTRAINTS
+   /REDTEAM /SELFREFINE /ALT3
+   + 선택한 카드 + 사용자 질문
+   + 마지막에 선택한 명령(/EXPERT 또는 /ELI10)
+   을 포함한 질문을 자동 생성하고 복사합니다.
+========================================================= */
+function makeCommandPrompt(mode) {
+    const questionEl = document.getElementById("question");
+    const question = questionEl ? questionEl.value.trim() : "";
+
+    if (!question) {
+        alert("질문을 먼저 입력하세요.");
+        return;
+    }
+
+    let cardText = "선택한 카드 없음";
+
+    // 이 HTML의 실제 selectedCards 배열을 우선 사용
+    if (typeof selectedCards !== "undefined" &&
+        Array.isArray(selectedCards) &&
+        selectedCards.length) {
+        cardText = selectedCards.map((card, i) =>
+            `${i + 1}번 카드: ${card.name} / ${card.keywords || card.meaning || ""}`
+        ).join("\n");
+    }
+
+    const prompt = `타로카드 해석을 해주세요.
+
+[명령어]
+/AUTOPROMPT
+/INTENT
+/CONTEXT
+/CONSTRAINTS
+/REDTEAM
+/SELFREFINE
+/ALT3
+${mode}
+
+[사용자 질문]
+${question}
+
+[선택한 타로 카드]
+${cardText}
+
+[해석 지시]
+1. /AUTOPROMPT: 질문의 목적과 필요한 답변 구조를 자동으로 정리하세요.
+2. /INTENT: 사용자의 실제 질문 의도를 먼저 파악하세요. 근거 없이 확대 해석하지 마세요.
+3. /CONTEXT: 질문, 선택한 카드, 기존 질문 맥락을 함께 고려하세요.
+4. /CONSTRAINTS: 질문에 포함된 조건과 현실적인 제약을 반드시 지키세요.
+5. /REDTEAM: 답변 전에 잘못된 가정, 누락, 과도한 추론을 스스로 점검하세요.
+6. /SELFREFINE: 초안보다 더 정확하고 구체적인 최종 답변으로 스스로 다듬으세요.
+7. /ALT3: 선택이나 추천이 필요한 경우 현실적인 대안 3가지를 비교하세요.
+8. ${mode}: ${mode === "/EXPERT"
+        ? "전문가 수준으로 논리적이고 구체적으로 답변하세요."
+        : "어린이도 이해할 수 있을 정도로 쉬운 말로 설명하되 핵심 내용과 구체적인 답변은 유지하세요."}
+
+선택한 타로 카드를 반드시 실제 해석에 반영하세요.
+질문의 핵심에서 벗어나 임의의 조건이나 대상을 만들어내지 마세요.
+`;
+
+    navigator.clipboard.writeText(prompt).then(() => {
+        alert(`${mode} 질문이 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
+        openSelectedAI();
+    }).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = prompt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        alert(`${mode} 질문이 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
+        openSelectedAI();
+    });
+}
+
+function openSelectedAI() {
+    const select = document.getElementById("aiEngine");
+    const engine = select ? select.value : "chatgpt";
+
+    const urls = {
+        chatgpt: "https://chatgpt.com/",
+        gemini: "https://gemini.google.com/",
+        claude: "https://claude.ai/",
+        copilot: "https://copilot.microsoft.com/",
+        perplexity: "https://www.perplexity.ai/"
+    };
+
+    window.open(urls[engine] || urls.chatgpt, "_blank");
+}
+</script>
+
 </body> 
 </html>
