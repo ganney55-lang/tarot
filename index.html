@@ -688,7 +688,250 @@ button:disabled {
 </head>
 
 <body>
+<!-- === [시작] AI 목적 명령어 조합 버튼 영역 (토글 기능 포함) === -->
+<div style="max-width: 900px; margin: 40px auto; padding: 24px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;">
+    
+    <!-- 안내 문구 및 버튼 영역 상단 배치 -->
+    <div style="margin-bottom: 16px; text-align: center;">
+        <h2 style="font-size: 18px; font-weight: bold; color: #1e293b; margin: 0 0 4px 0;">🤖 AI 목적 명령어 조합 도우미</h2>
+        <p style="font-size: 12px; color: #64748b; margin: 0;">버튼을 누르면 활성화되어 입력창에 추가되고, 다시 누르면 비활성화되어 지워집니다.</p>
+    </div>
 
+    <!-- 순수 CSS 스타일 -->
+    <style>
+        .ai-grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+        }
+        @media (max-width: 768px) {
+            .ai-grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .ai-tooltip-box {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+            transform: translateY(10px);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            margin-bottom: 8px;
+            width: 180px;
+            padding: 10px;
+            background: #0f172a;
+            color: #ffffff;
+            font-size: 11px;
+            border-radius: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            text-align: center;
+            pointer-events: none;
+        }
+        .ai-group:hover .ai-tooltip-box {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .ai-btn {
+            width: 100%;
+            padding: 10px 6px;
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .ai-btn:hover {
+            background: #e0e7ff;
+            border-color: #818cf8;
+        }
+        /* 활성화(Active) 상태일 때 버튼 디자인 */
+        .ai-btn.active {
+            background: #4f46e5 !important;
+            border-color: #4f46e5 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+        .ai-btn.active span {
+            color: #ffffff !important;
+        }
+    </style>
+
+    <!-- 버튼 그리드 컨테이너 -->
+    <div class="ai-grid-container" style="margin-bottom: 16px;">
+
+        <!-- 1. ELI10 -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[ELI10]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">ELI10</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">초보자 쉽게</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">ELI10 (Explain Like I'm 10)</div>
+                <div style="color: #cbd5e1;">초보자도 이해하기 쉽게 아주 쉽게 설명합니다.</div>
+            </div>
+        </div>
+
+        <!-- 2. EXPERT -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[EXPERT]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">EXPERT</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">전문적·깊이 있게</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">EXPERT</div>
+                <div style="color: #cbd5e1;">전문가 수준으로 깊이 있고 전문적인 내용을 다룹니다.</div>
+            </div>
+        </div>
+
+        <!-- 3. SHORT -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[SHORT]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">SHORT</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">짧고 핵심적으로</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">SHORT</div>
+                <div style="color: #cbd5e1;">핵심만 간결하고 짧게 압축해서 전달합니다.</div>
+            </div>
+        </div>
+
+        <!-- 4. STEP-BY-STEP -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[STEP-BY-STEP]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">STEP-BY-STEP</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">순서대로 설명</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">STEP-BY-STEP</div>
+                <div style="color: #cbd5e1;">단계별로 순서에 맞춰 알기 쉽게 설명합니다.</div>
+            </div>
+        </div>
+
+        <!-- 5. ANALYZE -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[ANALYZE]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">ANALYZE</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">구조적 분석</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">ANALYZE</div>
+                <div style="color: #cbd5e1;">문제를 구조적으로 철저히 분석합니다.</div>
+            </div>
+        </div>
+
+        <!-- 6. COMPARE -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[COMPARE]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">COMPARE</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">장단점 비교</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">COMPARE</div>
+                <div style="color: #cbd5e1;">대상 간의 장단점을 명확하게 비교합니다.</div>
+            </div>
+        </div>
+
+        <!-- 7. VERIFY -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[VERIFY]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">VERIFY</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">사실·논리 검증</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">VERIFY</div>
+                <div style="color: #cbd5e1;">사실 여부 및 논리적인 오류를 확인하고 검증합니다.</div>
+            </div>
+        </div>
+
+        <!-- 8. IMPROVE -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[IMPROVE]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">IMPROVE</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">결과 개선</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">IMPROVE</div>
+                <div style="color: #cbd5e1;">기존 결과물을 더 완성도 높게 수정·개선합니다.</div>
+            </div>
+        </div>
+
+        <!-- 9. SUMMARY -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[SUMMARY]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">SUMMARY</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">내용 요약</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">SUMMARY</div>
+                <div style="color: #cbd5e1;">길고 복잡한 내용을 알기 쉽게 요약합니다.</div>
+            </div>
+        </div>
+
+        <!-- 10. TABLE -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[TABLE]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">TABLE</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">표로 정리</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">TABLE</div>
+                <div style="color: #cbd5e1;">정보와 데이터를 깔끔한 표 형태로 정리합니다.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 💡 입력창(Textarea) 
+    <div>
+        <textarea id="question" placeholder="버튼을 클릭하면 활성화되어 여기에 추가됩니다. 다시 누르면 비활성화되어 지워집니다." style="width: 100%; height: 80px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 14px; box-sizing: border-box; resize: vertical; outline: none;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#cbd5e1'"></textarea>
+    </div>
+-->
+</div>
+
+<!-- 토글 기능 구현 자바스크립트 -->
+<script>
+    function toggleCommand(btn) {
+        const inputArea = document.getElementById('question');
+        if (!inputArea) return;
+
+        const cmd = btn.getAttribute('data-cmd');
+        
+        // 현재 버튼이 활성화 상태인지 확인
+        const isActive = btn.classList.toggle('active');
+
+        let text = inputArea.value;
+
+        if (isActive) {
+            // 활성화: 텍스트박스에 명령어가 없으면 추가 (공백 처리 포함)
+            if (text.trim() === '') {
+                inputArea.value = cmd;
+            } else {
+                // 기존 내용 뒤에 띄어쓰기 후 추가
+                inputArea.value = text.trim() + ' ' + cmd;
+            }
+        } else {
+            // 비활성화: 텍스트박스에서 해당 명령어 제거
+            // 1. 단독으로 있는 명령어 제거
+            let updatedText = text.replace(cmd, '');
+            
+            // 2. 명령어 앞뒤에 남은 불필요한 연속 공백 정리
+            updatedText = updatedText.replace(/\s+/g, ' ').trim();
+            
+            inputArea.value = updatedText;
+        }
+
+        inputArea.focus();
+    }
+</script>
+<!-- === [끝] AI 목적 명령어 조합 버튼 영역 === -->
 <div class="container">
 
 <h1>🔮 AI TAROT</h1>
@@ -3428,7 +3671,6 @@ function searchAll() {
 ===================================================== */ 
  
 document.getElementById("birthYear").value = ""; 
- 
 </script> 
  
 
@@ -3440,7 +3682,7 @@ document.getElementById("birthYear").value = "";
 
    두 버튼 모두:
    /AUTOPROMPT /INTENT /CONTEXT /CONSTRAINTS
-   /REDTEAM /SELFREFINE /ALT3
+   /REDTEAM /SELFREFINE /ALT5
    + 선택한 카드 + 사용자 질문
    + 마지막에 선택한 명령(/EXPERT 또는 /ELI10)
    을 포함한 질문을 자동 생성하고 복사합니다.
@@ -3474,7 +3716,7 @@ function makeCommandPrompt(mode) {
 /CONSTRAINTS
 /REDTEAM
 /SELFREFINE
-/ALT3
+/ALT5
 ${mode}
 
 [사용자 질문]
@@ -3484,13 +3726,14 @@ ${question}
 ${cardText}
 
 [해석 지시]
+0.카드의 순서는 과거>현재>미래>장애물>조언순입니다
 1. /AUTOPROMPT: 질문의 목적과 필요한 답변 구조를 자동으로 정리하세요.
 2. /INTENT: 사용자의 실제 질문 의도를 먼저 파악하세요. 근거 없이 확대 해석하지 마세요.
 3. /CONTEXT: 질문, 선택한 카드, 기존 질문 맥락을 함께 고려하세요.
 4. /CONSTRAINTS: 질문에 포함된 조건과 현실적인 제약을 반드시 지키세요.
 5. /REDTEAM: 답변 전에 잘못된 가정, 누락, 과도한 추론을 스스로 점검하세요.
 6. /SELFREFINE: 초안보다 더 정확하고 구체적인 최종 답변으로 스스로 다듬으세요.
-7. /ALT3: 선택이나 추천이 필요한 경우 현실적인 대안 3가지를 비교하세요.
+7. /ALT5: 선택이나 추천이 필요한 경우 현실적인 대안 5가지를 비교하세요.
 8. ${mode}: ${mode === "/EXPERT"
         ? "전문가 수준으로 논리적이고 구체적으로 답변하세요."
         : "어린이도 이해할 수 있을 정도로 쉬운 말로 설명하되 핵심 내용과 구체적인 답변은 유지하세요."}
