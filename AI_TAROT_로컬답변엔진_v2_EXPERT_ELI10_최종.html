@@ -1,0 +1,3534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🔮 AI TAROT</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "Noto Sans KR", Arial, sans-serif;
+    color: #f5e8b0;
+    background:
+        radial-gradient(circle at 50% 0%,
+        #18575b 0%,
+        #0a2831 30%,
+        #030b11 70%,
+        #010305 100%);
+}
+
+body::before {
+    content: "✦   ✧   ✦   ✧   ✦";
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,220,100,.28);
+    font-size: 20px;
+    letter-spacing: 15px;
+    pointer-events: none;
+}
+
+.container {
+    width: min(1200px, 94%);
+    margin: auto;
+    padding: 28px 0 60px;
+}
+
+h1 {
+    margin: 8px 0 5px;
+    text-align: center;
+    color: #ffe58a;
+    font-size: 32px;
+    text-shadow:
+        0 0 10px rgba(255,215,90,.7),
+        0 0 30px rgba(255,215,90,.3);
+}
+
+.subtitle {
+    text-align: center;
+    color: #b8d5d3;
+    margin-bottom: 25px;
+}
+
+.box {
+    padding: 18px;
+    margin-bottom: 15px;
+    background: rgba(2,15,20,.88);
+    border: 1px solid rgba(231,198,92,.5);
+    border-radius: 18px;
+    box-shadow: 0 0 25px rgba(0,0,0,.45);
+}
+
+.box-title {
+    color: #ffe38a;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+/* 질문 */
+
+.question-box label {
+    display: block;
+    margin-bottom: 9px;
+    color: #ffe38a;
+    font-weight: bold;
+}
+
+#question {
+    width: 100%;
+    min-height: 75px;
+    resize: vertical;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #4f7779;
+    background: #061219;
+    color: white;
+    font-size: 16px;
+    outline: none;
+}
+
+#question:focus {
+    border-color: #e7c65c;
+    box-shadow: 0 0 12px rgba(231,198,92,.25);
+}
+
+/* 사용자 정보 선택 */
+
+.info-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.info-check {
+    position: relative;
+}
+
+.info-check input {
+    display: none;
+}
+
+.info-check label {
+    display: block;
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid #4e8585;
+    background: #123c43;
+    color: #dceceb;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.info-check input:checked + label {
+    background: linear-gradient(135deg,#b98822,#ffe28a);
+    color: #211a08;
+    border-color: #ffe28a;
+}
+
+/* 사용자 정보 내용 */
+
+.optional-panel {
+    display: none;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(231,198,92,.25);
+}
+
+.optional-panel.show {
+    display: block;
+}
+
+.field-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.field-row > span {
+    min-width: 75px;
+    color: #ffe38a;
+    font-weight: bold;
+}
+
+select,
+input[type="text"],
+input[type="number"] {
+    padding: 9px 11px;
+    border-radius: 8px;
+    border: 1px solid #4f7779;
+    background: #061219;
+    color: white;
+    outline: none;
+}
+
+select:focus,
+input:focus {
+    border-color: #e7c65c;
+}
+
+/* MBTI */
+
+.mbti-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 7px 0;
+    flex-wrap: nowrap;
+}
+
+.mbti-title {
+    width: 95px;
+    min-width: 95px;
+    color: #d8eeee;
+    font-size: 13px;
+}
+
+.mbti-option {
+    position: relative;
+}
+
+.mbti-option input {
+    display: none;
+}
+
+.mbti-option label {
+    display: inline-block;
+    min-width: 88px;
+    padding: 8px 10px;
+    text-align: center;
+    border-radius: 8px;
+    background: #123c43;
+    border: 1px solid #4e8585;
+    color: #dceceb;
+    cursor: pointer;
+}
+
+.mbti-option input:checked + label {
+    background: linear-gradient(135deg,#b98822,#ffe28a);
+    color: #211a08;
+    border-color: #ffe28a;
+}
+
+/* 위치 */
+
+.location-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.location-box {
+    padding: 12px;
+    background: rgba(4,25,31,.8);
+    border: 1px solid rgba(100,150,150,.35);
+    border-radius: 10px;
+}
+
+.location-name {
+    color: #ffe38a;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.location-value {
+    color: #d9eeee;
+    min-height: 22px;
+    word-break: break-word;
+}
+
+.small-btn {
+    padding: 7px 10px;
+    background: #143c42;
+    color: #ffe49a;
+    border: 1px solid #7b692b;
+    border-radius: 7px;
+}
+
+/* 날씨 */
+
+.weather-info {
+    padding: 10px 0;
+    color: #dceceb;
+}
+
+.weather-main {
+    font-size: 18px;
+    color: #ffe28a;
+    font-weight: bold;
+}
+
+/* 시간 */
+
+.time-display {
+    font-size: 20px;
+    color: #ffe28a;
+    font-weight: bold;
+}
+
+/* 카드 수 */
+
+.controls {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+.count-btn {
+    background: #123c43;
+    color: #dceceb;
+    border: 1px solid #4e8585;
+}
+
+.count-btn.active {
+    background: linear-gradient(135deg,#b98822,#ffe28a);
+    color: #211a08;
+    border-color: #ffe28a;
+}
+
+/* 카드 */
+
+.status {
+    min-height: 25px;
+    margin: 18px 0 4px;
+    text-align: center;
+    color: #d9eeee;
+}
+
+.cards-area {
+    width: 100%;
+    min-height: 390px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 18px;
+    padding: 25px 10px 10px;
+}
+
+.card-wrap {
+    width: 180px;
+    flex: 0 0 180px;
+    text-align: center;
+    transition: .35s ease;
+}
+
+.card {
+    width: 100%;
+    aspect-ratio: .65;
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    border: 3px solid #e8c95e;
+
+    background:
+        radial-gradient(circle at center,
+        #157575 0%,
+        #083f47 30%,
+        #061c27 60%,
+        #02070c 100%);
+
+    box-shadow:
+        0 0 0 2px #59430f,
+        0 0 16px rgba(255,215,90,.6),
+        0 12px 30px rgba(0,0,0,.7);
+
+    transition: .4s ease;
+}
+
+.card::after {
+    content: "";
+    position: absolute;
+    inset: 7px;
+    border: 1px solid rgba(255,225,120,.9);
+    border-radius: 10px;
+    box-shadow: inset 0 0 12px rgba(255,215,90,.3);
+    z-index: 5;
+    pointer-events: none;
+}
+
+.back-pattern {
+    position: absolute;
+    inset: 18px;
+    border: 1px solid rgba(255,220,100,.5);
+    transform: rotate(45deg);
+    box-shadow: 0 0 10px rgba(255,215,80,.15);
+}
+
+.back-symbol {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    width: 68px;
+    height: 68px;
+    border: 2px solid #f2d46c;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 43px;
+    color: #ffe994;
+    background: radial-gradient(circle,#147373,#061b25);
+    box-shadow:
+        0 0 10px rgba(255,215,80,.85),
+        0 0 25px rgba(40,220,210,.4);
+    z-index: 2;
+}
+
+.front-content {
+    position: absolute;
+    inset: 0;
+    padding: 18px 12px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 3;
+    background:
+        radial-gradient(circle at center,
+        #176f70,
+        #073d45 45%,
+        #03151d 100%);
+}
+
+.card.revealed .front-content {
+    display: flex;
+}
+
+.card.revealed .back-symbol,
+.card.revealed .back-pattern {
+    display: none;
+}
+
+.card-name {
+    font-size: 25px;
+    font-weight: bold;
+    color: #ffe894;
+    margin-bottom: 18px;
+    text-shadow: 0 0 12px rgba(255,220,100,.5);
+}
+
+.card-symbol {
+    font-size: 42px;
+    margin-bottom: 16px;
+}
+
+.card-keywords {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #e2eeee;
+}
+
+.card-meaning {
+    margin-top: 10px;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #c7dddd;
+}
+
+.select-btn {
+    width: 100%;
+    margin-top: 9px;
+    padding: 10px 5px;
+    background: linear-gradient(135deg,#17484d,#09252d);
+    color: #ffe49a;
+    border: 1px solid #8c762d;
+}
+
+.select-btn:hover:not(:disabled) {
+    background: linear-gradient(135deg,#24656a,#12343a);
+}
+
+.position-label {
+    min-height: 24px;
+    margin-top: 8px;
+    color: #ffe28a;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.timer {
+    text-align: center;
+    margin-top: 4px;
+    color: #d5dfdd;
+}
+
+#timer {
+    display: inline-block;
+    min-width: 35px;
+    color: #ffe28a;
+    font-size: 25px;
+    font-weight: bold;
+}
+
+/* 결과 */
+
+#result {
+    margin-top: 25px;
+}
+
+.result-card {
+    padding: 20px;
+    margin-bottom: 15px;
+    background: rgba(3,18,24,.9);
+    border: 1px solid rgba(231,198,92,.5);
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,.3);
+}
+
+.result-card h3 {
+    margin-top: 0;
+    color: #ffe28b;
+}
+
+.result-card p {
+    line-height: 1.8;
+    color: #e2eeee;
+}
+
+.integrated .flow {
+    color: #ffe28a;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+
+/* 목적지 실시간 정보 */
+.destination-status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: rgba(20,72,76,.55);
+    color: #ffe28a;
+    font-weight: bold;
+}
+
+.destination-live-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.live-item {
+    padding: 10px;
+    border: 1px solid rgba(100,150,150,.35);
+    border-radius: 9px;
+    background: rgba(4,25,31,.7);
+}
+
+.live-item span {
+    display: block;
+    color: #a9c4c3;
+    font-size: 12px;
+    margin-bottom: 4px;
+}
+
+.live-item strong {
+    color: #ffe28a;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+@media(max-width:700px) {
+    .destination-live-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 검색 / AI */
+
+.tool-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tool-label {
+    color: #ffe28a;
+    font-weight: bold;
+}
+
+.tool-select {
+    background: #061219;
+    color: #ffe49a;
+    border: 1px solid #7b692b;
+    padding: 9px;
+    border-radius: 8px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.action-buttons button {
+    white-space: nowrap;
+    background: #143c42;
+    color: #ffe49a;
+    border: 1px solid #7b692b;
+}
+
+.action-buttons button:hover {
+    background: #20545a;
+}
+
+.gold-btn {
+    background: linear-gradient(135deg,#b8881f,#f2d674) !important;
+    color: #211a08 !important;
+}
+
+button:disabled {
+    opacity: .35;
+    cursor: not-allowed;
+}
+
+/* 알림 */
+
+.notice {
+    font-size: 12px;
+    color: #a9c4c3;
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+/* 모바일 */
+
+@media(max-width:700px) {
+
+    h1 {
+        font-size: 26px;
+    }
+
+    .cards-area {
+        gap: 9px;
+        padding-left: 3px;
+        padding-right: 3px;
+    }
+
+    .card-wrap {
+        width: 30%;
+        max-width: 145px;
+        flex: 1 1 30%;
+    }
+
+    .card-name {
+        font-size: 19px;
+    }
+
+    .card-symbol {
+        font-size: 30px;
+    }
+
+    .card-keywords {
+        font-size: 11px;
+    }
+
+    .card-meaning {
+        font-size: 10px;
+    }
+
+    .select-btn {
+        font-size: 11px;
+        padding: 8px 3px;
+    }
+
+    .location-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mbti-title {
+        width: 80px;
+        min-width: 80px;
+        font-size: 11px;
+    }
+
+    .mbti-option label {
+        min-width: 72px;
+        padding: 7px 5px;
+        font-size: 11px;
+    }
+
+    .action-buttons {
+        gap: 6px;
+    }
+
+    .action-buttons button {
+        font-size: 11px;
+        padding: 9px 8px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🔮 AI TAROT</h1>
+
+<div class="subtitle">
+질문을 생각하고 카드를 선택하세요
+</div>
+
+
+<!-- =====================================================
+     질문
+===================================================== -->
+
+<div class="box question-box">
+
+<label>🔮 질문을 입력하세요</label>
+
+<textarea
+    id="question"
+    placeholder="예: 오늘 영화 뭐 볼까? / 지금 어디 갈까? / 저녁 뭐 먹을까?"
+></textarea>
+
+</div>
+
+
+<!-- =====================================================
+     사용자 정보 선택
+===================================================== -->
+
+<div class="box">
+
+<div class="box-title">
+👤 추가 정보 선택
+</div>
+
+<div class="info-selector">
+
+<div class="info-check">
+<input type="checkbox" id="useBlood">
+<label for="useBlood">☐ 혈액형</label>
+</div>
+
+<div class="info-check">
+<input type="checkbox" id="useMbti">
+<label for="useMbti">☐ MBTI</label>
+</div>
+
+<div class="info-check">
+<input type="checkbox" id="useZodiac">
+<label for="useZodiac">☐ 별자리</label>
+</div>
+
+<div class="info-check">
+<input type="checkbox" id="useWeather">
+<label for="useWeather">☐ 날씨</label>
+</div>
+
+<div class="info-check">
+<input type="checkbox" id="useTime">
+<label for="useTime">☐ 시간</label>
+</div>
+
+<div class="info-check">
+<input type="checkbox" id="useLocation">
+<label for="useLocation">☐ 현위치</label>
+</div>
+
+<div class="info-check">
+<input type="checkbox" id="useDestination">
+<label for="useDestination">☐ 목적지</label>
+</div>
+
+<div class="info-check">
+<input type="checkbox" id="useGender">
+<label for="useGender">☐ 성별</label>
+</div>
+
+</div>
+
+
+<!-- 혈액형 -->
+
+<div id="bloodPanel" class="optional-panel">
+
+<div class="field-row">
+<span>혈액형</span>
+
+<select id="bloodType">
+<option value="">선택 안 함</option>
+<option value="A">A형</option>
+<option value="B">B형</option>
+<option value="O">O형</option>
+<option value="AB">AB형</option>
+</select>
+</div>
+
+</div>
+
+
+<!-- MBTI -->
+
+<div id="mbtiPanel" class="optional-panel">
+
+<div class="box-title">MBTI</div>
+
+<div class="mbti-row">
+
+<div class="mbti-title">
+에너지 방향
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiEI" id="mbtiI" value="I">
+<label for="mbtiI">I 내향</label>
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiEI" id="mbtiE" value="E">
+<label for="mbtiE">E 외향</label>
+</div>
+
+</div>
+
+
+<div class="mbti-row">
+
+<div class="mbti-title">
+인식 방식
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiSN" id="mbtiS" value="S">
+<label for="mbtiS">S 감각</label>
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiSN" id="mbtiN" value="N">
+<label for="mbtiN">N 직관</label>
+</div>
+
+</div>
+
+
+<div class="mbti-row">
+
+<div class="mbti-title">
+판단 방식
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiTF" id="mbtiT" value="T">
+<label for="mbtiT">T 사고</label>
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiTF" id="mbtiF" value="F">
+<label for="mbtiF">F 감정</label>
+</div>
+
+</div>
+
+
+<div class="mbti-row">
+
+<div class="mbti-title">
+생활 방식
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiJP" id="mbtiJ" value="J">
+<label for="mbtiJ">J 판단</label>
+</div>
+
+<div class="mbti-option">
+<input type="radio" name="mbtiJP" id="mbtiP" value="P">
+<label for="mbtiP">P 인식</label>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- 별자리 -->
+
+<div id="zodiacPanel" class="optional-panel">
+
+<div class="field-row">
+
+<span>생년월일</span>
+
+<input
+type="number"
+id="birthYear"
+placeholder="1982"
+min="1900"
+max="2100"
+style="width:100px"
+>
+
+<select id="birthMonth">
+<option value="">월</option>
+</select>
+
+<select id="birthDay">
+<option value="">일</option>
+</select>
+
+</div>
+
+<div class="field-row">
+
+<span>별자리</span>
+
+<select id="zodiac">
+<option value="">자동 계산</option>
+<option value="물병자리">물병자리</option>
+<option value="물고기자리">물고기자리</option>
+<option value="양자리">양자리</option>
+<option value="황소자리">황소자리</option>
+<option value="쌍둥이자리">쌍둥이자리</option>
+<option value="게자리">게자리</option>
+<option value="사자자리">사자자리</option>
+<option value="처녀자리">처녀자리</option>
+<option value="천칭자리">천칭자리</option>
+<option value="전갈자리">전갈자리</option>
+<option value="사수자리">사수자리</option>
+<option value="염소자리">염소자리</option>
+</select>
+
+</div>
+
+<div class="notice">
+생년월일을 입력하면 별자리가 자동 계산됩니다.
+</div>
+
+</div>
+
+
+<!-- 날씨 -->
+
+<div id="weatherPanel" class="optional-panel">
+
+<div class="box-title">
+🌦 현재 날씨
+</div>
+
+<div class="weather-info">
+
+<div id="weatherMain" class="weather-main">
+날씨 정보를 가져오려면 현위치가 필요합니다.
+</div>
+
+<div id="weatherDetail">
+</div>
+
+</div>
+
+</div>
+
+
+<!-- 시간 -->
+
+<div id="timePanel" class="optional-panel">
+
+<div class="field-row">
+
+<span>현재 시간</span>
+
+<div id="currentTime" class="time-display">
+-
+</div>
+
+</div>
+
+<div id="timeAdvice" class="notice">
+시간대에 따라 추천을 조정합니다.
+</div>
+
+</div>
+
+
+<!-- 위치 -->
+
+<div id="locationPanel" class="optional-panel">
+
+<div class="location-grid">
+
+<div class="location-box">
+
+<div class="location-name">
+📍 현위치
+</div>
+
+<div
+id="currentLocation"
+class="location-value"
+>
+위치 확인 중...
+</div>
+
+<br>
+
+<button
+class="small-btn"
+onclick="getCurrentLocation()"
+>
+현재 위치 가져오기
+</button>
+
+</div>
+
+
+
+
+</div>
+
+</div>
+
+
+<!-- 목적지만 -->
+
+<div id="destinationPanel" class="optional-panel">
+
+<div class="field-row">
+<span>목적지</span>
+
+<input
+type="text"
+id="destination"
+placeholder="직접 입력하거나 질문에 목적지를 넣으세요. 예: 부산"
+style="width:min(420px,100%)"
+>
+
+<button class="small-btn" type="button" onclick="extractDestinationFromQuestion(true)">
+질문에서 자동 인식
+</button>
+</div>
+
+<div class="notice">
+목적지는 한 곳만 관리합니다. 직접 입력한 목적지가 가장 우선하며,
+입력하지 않으면 질문과 이전 대화에서 자동으로 인식합니다.
+</div>
+
+<div id="destinationStatus" class="destination-status">
+목적지 미설정
+</div>
+
+<div class="destination-live-grid">
+  <div class="live-item">
+    <span>🕐 현지 시간</span>
+    <strong id="destinationTime">-</strong>
+  </div>
+  <div class="live-item">
+    <span>🌦 날씨</span>
+    <strong id="destinationWeather">-</strong>
+  </div>
+  <div class="live-item">
+    <span>🌡 체감/기온</span>
+    <strong id="destinationTemp">-</strong>
+  </div>
+  <div class="live-item">
+    <span>📍 좌표</span>
+    <strong id="destinationCoords">-</strong>
+  </div>
+</div>
+
+<div id="destinationAdvice" class="notice">
+목적지를 설정하면 목적지 기준 시간과 날씨를 조회합니다.
+</div>
+
+</div>
+
+
+<!-- 성별 -->
+
+<div id="genderPanel" class="optional-panel">
+
+<div class="field-row">
+
+<span>성별</span>
+
+<select id="gender">
+<option value="">선택 안 함</option>
+<option value="남성">남성</option>
+<option value="여성">여성</option>
+</select>
+
+</div>
+
+<div class="notice">
+패션·의류 관련 질문에서 성별 조건을 추천에 반영합니다.
+</div>
+
+</div>
+
+</div>
+
+
+<!-- =====================================================
+     카드 수
+===================================================== -->
+
+<div class="box">
+
+<div class="box-title">
+🃏 카드 선택
+</div>
+
+<div class="controls">
+
+<button
+class="count-btn active"
+data-count="1"
+onclick="setCardCount(1)"
+>
+1장
+</button>
+
+<button
+class="count-btn"
+data-count="3"
+onclick="setCardCount(3)"
+>
+3장
+</button>
+
+<button
+class="count-btn"
+data-count="5"
+onclick="setCardCount(5)"
+>
+5장
+</button>
+
+</div>
+
+</div>
+
+
+<div class="status" id="status">
+질문을 입력하면 카드 선택을 시작할 수 있습니다.
+</div>
+
+<div class="cards-area" id="cardsArea"></div>
+
+<div class="timer">
+카드 선택 간격
+<span id="timer">2</span>
+초
+</div>
+
+
+<div id="result"></div>
+
+
+<!-- =====================================================
+     검색 / AI
+===================================================== -->
+
+<div class="box">
+
+<div class="tool-row">
+
+<span class="tool-label">
+🔎 검색엔진
+</span>
+
+<select id="searchEngine" class="tool-select">
+
+<option value="google">
+Google
+</option>
+
+<option value="naver">
+Naver
+</option>
+
+<option value="daum">
+Daum
+</option>
+
+<option value="bing">
+Bing
+</option>
+
+<option value="duckduckgo">
+DuckDuckGo
+</option>
+
+</select>
+
+
+<button
+id="searchButton"
+onclick="searchAll()"
+disabled
+>
+🔎 검색
+</button>
+
+
+<span class="tool-label" style="margin-left:10px;">
+🤖 AI
+</span>
+
+<select id="aiEngine" class="tool-select">
+
+<option value="chatgpt">
+ChatGPT
+</option>
+
+<option value="gemini">
+Gemini
+</option>
+
+<option value="claude">
+Claude
+</option>
+
+<option value="copilot">
+Copilot
+</option>
+
+<option value="perplexity">
+Perplexity
+</option>
+
+</select>
+
+
+<button
+id="gptButton"
+class="gold-btn"
+onclick="openAIWithPrompt()"
+disabled
+>
+📋 AI 질문 만들기
+</button>
+
+<button id="expertButton" class="gold-btn" type="button" onclick="makeCommandPrompt('/EXPERT')">
+전문답변
+</button>
+
+<button id="eli10Button" class="gold-btn" type="button" onclick="makeCommandPrompt('/ELI10')">
+간편답변
+</button>
+
+
+</div>
+
+<div class="notice">
+AI 버튼을 누르면 질문을 자동으로 만들고 클립보드에 복사한 뒤 선택한 AI 페이지를 엽니다.
+브라우저 보안상 외부 AI 사이트의 입력창에 자동 붙여넣기까지 직접 실행할 수는 없습니다.
+</div>
+
+</div>
+
+
+</div>
+
+
+<script>
+
+/* =====================================================
+   타로 카드
+===================================================== */
+
+const cards = [
+
+{name:"바보",symbol:"🃏",keywords:"새로운 시작 · 자유 · 모험",meaning:"새로운 가능성을 향해 가볍게 시작하는 흐름"},
+{name:"마법사",symbol:"🪄",keywords:"실행력 · 능력 · 기회 활용",meaning:"가지고 있는 능력과 자원을 적극적으로 활용하는 흐름"},
+{name:"여사제",symbol:"🌙",keywords:"직관 · 신중함 · 숨겨진 정보",meaning:"겉으로 드러난 정보보다 내면의 판단을 중요하게 보는 흐름"},
+{name:"여황제",symbol:"👑",keywords:"풍요 · 만족 · 편안함 · 성장",meaning:"충분한 만족과 편안함을 추구하는 흐름"},
+{name:"황제",symbol:"♛",keywords:"질서 · 안정 · 계획 · 통제",meaning:"계획과 안정적인 구조를 중요하게 보는 흐름"},
+{name:"교황",symbol:"⛪",keywords:"전통 · 조언 · 규칙 · 검증",meaning:"익숙하고 검증된 방법을 따르는 흐름"},
+{name:"연인",symbol:"❤️",keywords:"선택 · 관계 · 조화",meaning:"선택과 가치관의 조화를 중요하게 보는 흐름"},
+{name:"전차",symbol:"🏇",keywords:"추진력 · 이동 · 승리 · 의지",meaning:"망설이기보다 방향을 정하고 적극적으로 움직이는 흐름"},
+{name:"힘",symbol:"🦁",keywords:"인내 · 용기 · 절제 · 통제",meaning:"강한 욕구를 부드럽게 조절하면서 원하는 것을 얻는 흐름"},
+{name:"은둔자",symbol:"🏮",keywords:"성찰 · 탐색 · 혼자 생각하기",meaning:"서두르지 않고 스스로 답을 찾는 흐름"},
+{name:"운명의 수레바퀴",symbol:"☸️",keywords:"변화 · 흐름 · 기회 · 전환점",meaning:"예상하지 못한 변화나 새로운 흐름이 생기는 과정"},
+{name:"정의",symbol:"⚖️",keywords:"균형 · 판단 · 원인과 결과",meaning:"감정보다 객관적인 기준과 결과를 비교하는 흐름"},
+{name:"매달린 사람",symbol:"🙃",keywords:"기다림 · 관점 변화 · 멈춤",meaning:"잠시 멈추고 기존과 다른 관점에서 바라보는 흐름"},
+{name:"죽음",symbol:"💀",keywords:"종료 · 변화 · 전환",meaning:"기존 방식을 끝내고 새로운 단계로 넘어가는 흐름"},
+{name:"절제",symbol:"⚗️",keywords:"균형 · 조화 · 조절",meaning:"극단을 피하고 적절한 수준을 유지하는 흐름"},
+{name:"악마",symbol:"😈",keywords:"집착 · 욕망 · 유혹 · 과도함",meaning:"강한 욕구나 지나친 선택이 영향을 미치는 흐름"},
+{name:"탑",symbol:"⚡",keywords:"충격 · 변화 · 붕괴 · 예상 밖의 상황",meaning:"예상했던 계획이나 판단이 갑자기 바뀌는 흐름"},
+{name:"별",symbol:"⭐",keywords:"희망 · 회복 · 기대",meaning:"긍정적인 방향을 기대하고 회복하는 흐름"},
+{name:"달",symbol:"🌙",keywords:"불확실성 · 감정 · 착각",meaning:"확실하지 않은 정보와 감정이 판단에 영향을 미치는 흐름"},
+{name:"태양",symbol:"☀️",keywords:"기쁨 · 활력 · 명확함 · 만족",meaning:"밝고 분명하며 만족도가 높은 방향으로 흐르는 과정"},
+{name:"심판",symbol:"📯",keywords:"결정 · 재평가 · 깨달음",meaning:"과거를 돌아보고 최종적인 판단을 내리는 흐름"},
+{name:"세계",symbol:"🌍",keywords:"완성 · 만족 · 성취 · 마무리",meaning:"전체적인 만족과 완성에 도달하는 흐름"}
+
+];
+
+
+/* =====================================================
+   혈액형 성향
+===================================================== */
+
+const bloodTraits = {
+
+A: {
+traits:["신중함","꼼꼼함","안정성","검토 후 결정"],
+preferences:["검증된 선택","깔끔함","균형","실용성"]
+},
+
+B: {
+traits:["자유로움","개성","즉흥성","새로운 경험"],
+preferences:["새로운 것","개성 있는 선택","액티브한 경험","색다른 조합"]
+},
+
+O: {
+traits:["적극성","추진력","활동성","사교성"],
+preferences:["활동적인 선택","즐거운 경험","사람들과 함께하는 선택"]
+},
+
+AB: {
+traits:["독창성","유연성","복합적 사고","상황 적응"],
+preferences:["독특한 선택","새로운 경험","복합적인 콘텐츠","유연한 선택"]
+}
+
+};
+
+
+/* =====================================================
+   MBTI 성향
+===================================================== */
+
+const mbtiTraits = {
+
+I:["내향적","조용한 환경","혼자 즐길 수 있는 선택"],
+E:["외향적","활동적인 환경","사람들과 함께하는 선택"],
+
+S:["현실적","구체적인 정보","실용적인 선택"],
+N:["직관적","새로운 가능성","창의적인 선택"],
+
+T:["논리적","효율","합리적인 판단"],
+F:["감정적","분위기","만족감과 감성"],
+
+J:["계획적","예측 가능성","완성도"],
+P:["유연함","즉흥성","상황에 따른 변화"]
+
+};
+
+
+/* =====================================================
+   별자리 성향
+===================================================== */
+
+const zodiacTraits = {
+
+"양자리":["활동적","도전적","추진력"],
+"황소자리":["안정적","감각적","편안함"],
+"쌍둥이자리":["호기심","변화","소통"],
+"게자리":["감성적","편안함","익숙함"],
+"사자자리":["자신감","화려함","즐거움"],
+"처녀자리":["꼼꼼함","분석적","실용적","완성도"],
+"천칭자리":["균형","미적 감각","조화"],
+"전갈자리":["집중력","깊이","강렬함"],
+"사수자리":["자유","모험","새로운 경험"],
+"염소자리":["현실적","계획적","성취"],
+"물병자리":["독창적","새로운 것","개성"],
+"물고기자리":["감성적","상상력","분위기"]
+
+};
+
+
+/* =====================================================
+   상태
+===================================================== */
+
+let cardCount = 1;
+let selectedCards = [];
+let selecting = false;
+let availableCards = [];
+
+
+/* =====================================================
+   초기화
+===================================================== */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    fillBirthDates();
+
+    setCardCount(1);
+
+    setupCheckboxes();
+
+    updateTime();
+
+    setInterval(updateTime,1000);
+
+    document.getElementById("destination")
+        .addEventListener("change", () => resolveDestination(true));
+
+    document.getElementById("destination")
+        .addEventListener("blur", () => resolveDestination(true));
+
+    document
+        .getElementById("question")
+        .addEventListener("input", () => {
+
+            if (!selecting &&
+                document.getElementById("question").value.trim()) {
+
+                createCards();
+
+                // 목적지 입력이 비어 있을 때만 질문에서 자동 추출
+                if (document.getElementById("useDestination").checked &&
+                    !document.getElementById("destination").value.trim()) {
+                    debounceResolveDestination();
+                }
+
+            }
+
+        });
+
+});
+
+
+/* =====================================================
+   체크박스
+===================================================== */
+
+function setupCheckboxes() {
+
+    const map = {
+
+        useBlood:"bloodPanel",
+        useMbti:"mbtiPanel",
+        useZodiac:"zodiacPanel",
+        useWeather:"weatherPanel",
+        useTime:"timePanel",
+        useLocation:"locationPanel",
+        useDestination:"destinationPanel",
+        useGender:"genderPanel"
+
+    };
+
+    Object.keys(map).forEach(id => {
+
+        document
+            .getElementById(id)
+            .addEventListener("change", function() {
+
+                document
+                    .getElementById(map[id])
+                    .classList.toggle(
+                        "show",
+                        this.checked
+                    );
+
+                if (id === "useLocation" && this.checked) {
+                    getCurrentLocation();
+                }
+
+                if (id === "useWeather" && this.checked) {
+                    if (document.getElementById("useDestination").checked) {
+                        resolveDestination(false);
+                    } else {
+                        getCurrentLocation();
+                    }
+                }
+
+                if (id === "useDestination" && this.checked) {
+                    resolveDestination(false);
+                }
+
+                refreshCards();
+
+            });
+
+    });
+
+}
+
+
+/* =====================================================
+   생년월일
+===================================================== */
+
+function fillBirthDates() {
+
+    const month =
+        document.getElementById("birthMonth");
+
+    const day =
+        document.getElementById("birthDay");
+
+    for(let i=1;i<=12;i++) {
+
+        const option =
+            document.createElement("option");
+
+        option.value = i;
+        option.textContent = String(i).padStart(2,"0");
+
+        month.appendChild(option);
+
+    }
+
+    for(let i=1;i<=31;i++) {
+
+        const option =
+            document.createElement("option");
+
+        option.value = i;
+        option.textContent = String(i).padStart(2,"0");
+
+        day.appendChild(option);
+
+    }
+
+    document
+        .getElementById("birthMonth")
+        .addEventListener("change", calculateZodiac);
+
+    document
+        .getElementById("birthDay")
+        .addEventListener("change", calculateZodiac);
+
+}
+
+
+/* =====================================================
+   별자리 자동 계산
+===================================================== */
+
+function calculateZodiac() {
+
+    const month =
+        Number(document.getElementById("birthMonth").value);
+
+    const day =
+        Number(document.getElementById("birthDay").value);
+
+    if(!month || !day) return;
+
+    let sign = "";
+
+    if ((month===1 && day>=20)||(month===2 && day<=18)) sign="물병자리";
+    else if ((month===2 && day>=19)||(month===3 && day<=20)) sign="물고기자리";
+    else if ((month===3 && day>=21)||(month===4 && day<=19)) sign="양자리";
+    else if ((month===4 && day>=20)||(month===5 && day<=20)) sign="황소자리";
+    else if ((month===5 && day>=21)||(month===6 && day<=21)) sign="쌍둥이자리";
+    else if ((month===6 && day>=22)||(month===7 && day<=22)) sign="게자리";
+    else if ((month===7 && day>=23)||(month===8 && day<=22)) sign="사자자리";
+    else if ((month===8 && day>=23)||(month===9 && day<=22)) sign="처녀자리";
+    else if ((month===9 && day>=23)||(month===10 && day<=22)) sign="천칭자리";
+    else if ((month===10 && day>=23)||(month===11 && day<=22)) sign="전갈자리";
+    else if ((month===11 && day>=23)||(month===12 && day<=21)) sign="사수자리";
+    else sign="염소자리";
+
+    document.getElementById("zodiac").value = sign;
+
+}
+
+
+/* =====================================================
+   시간
+===================================================== */
+
+function updateTime() {
+
+    const now = new Date();
+
+    const text =
+        now.toLocaleString("ko-KR", {
+            year:"numeric",
+            month:"2-digit",
+            day:"2-digit",
+            weekday:"short",
+            hour:"2-digit",
+            minute:"2-digit",
+            second:"2-digit"
+        });
+
+    document.getElementById("currentTime")
+        .textContent = text;
+
+
+    const hour = now.getHours();
+
+    let advice = "";
+
+    if(hour >= 0 && hour < 5) {
+
+        advice =
+            "🌙 새벽 시간입니다. 야외활동이나 일반 관광지보다 안전하고 이용 가능한 실내 활동을 우선합니다.";
+
+    }
+    else if(hour < 9) {
+
+        advice =
+            "🌅 이른 아침입니다. 아침식사, 산책, 조용한 활동을 우선 고려합니다.";
+
+    }
+    else if(hour < 12) {
+
+        advice =
+            "☀️ 오전입니다. 관광, 외출, 활동적인 일정이 가능합니다.";
+
+    }
+    else if(hour < 18) {
+
+        advice =
+            "🌤 낮 시간입니다. 외출과 관광 활동을 적극적으로 고려합니다.";
+
+    }
+    else if(hour < 22) {
+
+        advice =
+            "🌆 저녁 시간입니다. 식사, 영화, 야간 관광 등을 고려합니다.";
+
+    }
+    else {
+
+        advice =
+            "🌙 늦은 밤입니다. 안전하고 가까운 장소 또는 실내 활동을 우선합니다.";
+
+    }
+
+    document.getElementById("timeAdvice")
+        .textContent = advice;
+
+}
+
+
+/* =====================================================
+   위치
+===================================================== */
+
+function getCurrentLocation() {
+
+    const output =
+        document.getElementById("currentLocation");
+
+    output.textContent =
+        "📍 현재 위치 확인 중...";
+
+    if(!navigator.geolocation) {
+
+        output.textContent =
+            "이 브라우저에서는 위치 기능을 지원하지 않습니다.";
+
+        return;
+
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+        async position => {
+
+            const lat =
+                position.coords.latitude;
+
+            const lon =
+                position.coords.longitude;
+
+            try {
+
+                const url =
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&accept-language=ko`;
+
+                const response =
+                    await fetch(url);
+
+                const data =
+                    await response.json();
+
+                const address =
+                    data.address || {};
+
+                const name =
+                    address.city ||
+                    address.town ||
+                    address.county ||
+                    address.state ||
+                    "현재 위치";
+
+                output.textContent =
+                    `${name} (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+
+                if(document.getElementById("useWeather").checked) {
+                    getWeather(lat,lon,name);
+                }
+
+            }
+            catch(error) {
+
+                output.textContent =
+                    `현재 위치 (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
+
+                if(document.getElementById("useWeather").checked) {
+                    getWeather(lat,lon,"현재 위치");
+                }
+
+            }
+
+        },
+
+        error => {
+
+            output.textContent =
+                "위치 권한이 허용되지 않았습니다.";
+
+        }
+
+    );
+
+}
+
+
+/* =====================================================
+   날씨
+===================================================== */
+
+async function getWeather(lat,lon,locationName) {
+
+    const main =
+        document.getElementById("weatherMain");
+
+    const detail =
+        document.getElementById("weatherDetail");
+
+    main.textContent =
+        "🌦 현재 날씨 조회 중...";
+
+    try {
+
+        const url =
+            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,apparent_temperature,precipitation,rain,weather_code,wind_speed_10m&timezone=auto`;
+
+        const response =
+            await fetch(url);
+
+        const data =
+            await response.json();
+
+        const current =
+            data.current;
+
+        const weather =
+            weatherCodeText(current.weather_code);
+
+        main.textContent =
+            `${weather.icon} ${weather.text} · ${current.temperature_2m}℃`;
+
+        detail.innerHTML =
+            `
+            체감온도 ${current.apparent_temperature}℃ /
+            강수량 ${current.precipitation}mm /
+            풍속 ${current.wind_speed_10m}km/h
+            <br>
+            현재 위치: ${locationName}
+            `;
+
+    }
+    catch(error) {
+
+        main.textContent =
+            "날씨 정보를 가져오지 못했습니다.";
+
+    }
+
+}
+
+
+/* =====================================================
+   날씨 코드
+===================================================== */
+
+function weatherCodeText(code) {
+
+    if(code === 0)
+        return {icon:"☀️",text:"맑음"};
+
+    if([1,2,3].includes(code))
+        return {icon:"🌤️",text:"구름"};
+
+    if([45,48].includes(code))
+        return {icon:"🌫️",text:"안개"};
+
+    if([51,53,55,56,57].includes(code))
+        return {icon:"🌦️",text:"이슬비"};
+
+    if([61,63,65,66,67].includes(code))
+        return {icon:"🌧️",text:"비"};
+
+    if([71,73,75,77].includes(code))
+        return {icon:"❄️",text:"눈"};
+
+    if([80,81,82].includes(code))
+        return {icon:"🌧️",text:"소나기"};
+
+    if([95,96,99].includes(code))
+        return {icon:"⛈️",text:"뇌우"};
+
+    return {icon:"🌤️",text:"날씨"};
+
+}
+
+
+/* =====================================================
+   카드 수
+===================================================== */
+
+function setCardCount(n) {
+
+    if(selecting) return;
+
+    cardCount = n;
+
+    document
+        .querySelectorAll(".count-btn")
+        .forEach(btn => {
+
+            btn.classList.toggle(
+                "active",
+                Number(btn.dataset.count) === n
+            );
+
+        });
+
+    selectedCards = [];
+
+    if(document.getElementById("question").value.trim()) {
+        createCards();
+    }
+
+}
+
+
+/* =====================================================
+   카드 생성
+===================================================== */
+
+function createCards() {
+
+    const area =
+        document.getElementById("cardsArea");
+
+    area.innerHTML = "";
+
+    selectedCards = [];
+
+    selecting = false;
+
+    document.getElementById("result").innerHTML = "";
+
+    document.getElementById("gptButton").disabled = true;
+
+    document.getElementById("searchButton").disabled = true;
+
+    document.getElementById("timer").textContent = "2";
+
+
+    availableCards =
+        [...cards]
+        .sort(() => Math.random() - .5)
+        .slice(0,cardCount);
+
+
+    availableCards.forEach((card,index) => {
+
+        const wrap =
+            document.createElement("div");
+
+        wrap.className = "card-wrap";
+
+        wrap.innerHTML = `
+
+        <div class="card" id="card-${index}">
+
+            <div class="back-pattern"></div>
+
+            <div class="back-symbol">
+                ✦
+            </div>
+
+            <div class="front-content">
+
+                <div class="card-symbol">
+                    ${card.symbol}
+                </div>
+
+                <div class="card-name">
+                    ${card.name}
+                </div>
+
+                <div class="card-keywords">
+                    ${card.keywords}
+                </div>
+
+                <div class="card-meaning">
+                    ${card.meaning}
+                </div>
+
+            </div>
+
+        </div>
+
+        <button
+            class="select-btn"
+            id="select-${index}"
+            onclick="chooseCard(${index})"
+        >
+            ${index+1}번 선택
+        </button>
+
+        <div
+            class="position-label"
+            id="position-${index}"
+        ></div>
+
+        `;
+
+        area.appendChild(wrap);
+
+    });
+
+
+    document.getElementById("status")
+        .textContent =
+        `${cardCount}장의 카드를 준비했습니다. 마음이 가는 카드부터 선택하세요.`;
+
+}
+
+
+/* =====================================================
+   카드 선택
+===================================================== */
+
+function chooseCard(index) {
+
+    if(selecting) return;
+
+    if(selectedCards.length >= cardCount) return;
+
+    selecting = true;
+
+    const card =
+        availableCards[index];
+
+    selectedCards.push(card);
+
+
+    const cardElement =
+        document.getElementById(`card-${index}`);
+
+    const button =
+        document.getElementById(`select-${index}`);
+
+    if(button) button.remove();
+
+    const wrap =
+        cardElement.parentElement;
+
+    wrap.dataset.selected = "true";
+
+
+    setTimeout(() => {
+
+        cardElement.classList.add("revealed");
+
+        document.getElementById(
+            `position-${index}`
+        ).textContent =
+            getRole(selectedCards.length-1);
+
+    },150);
+
+
+    document.getElementById("status")
+        .textContent =
+        `${selectedCards.length} / ${cardCount}장 선택 완료`;
+
+
+    if(selectedCards.length < cardCount) {
+
+        let seconds = 2;
+
+        document.getElementById("timer")
+            .textContent = seconds;
+
+        const interval =
+            setInterval(() => {
+
+                seconds--;
+
+                document.getElementById("timer")
+                    .textContent = seconds;
+
+                if(seconds <= 0) {
+
+                    clearInterval(interval);
+
+                    selecting = false;
+
+                    document.getElementById("status")
+                        .textContent =
+                        `다음 카드를 선택하세요. (${selectedCards.length+1}/${cardCount})`;
+
+                }
+
+            },1000);
+
+    }
+    else {
+
+        selecting = false;
+
+        document.getElementById("timer")
+            .textContent = "완료";
+
+        document.getElementById("status")
+            .textContent =
+            "카드 선택이 완료되었습니다.";
+
+        removeUnselectedCards();
+
+        showResults();
+
+    }
+
+}
+
+
+/* =====================================================
+   카드 위치
+===================================================== */
+
+function getRole(index) {
+
+    if(cardCount === 1)
+        return "현재 질문의 핵심";
+
+    if(cardCount === 3)
+        return ["과거","현재","미래"][index];
+
+    return [
+        "과거",
+        "현재",
+        "미래",
+        "장애물",
+        "조언"
+    ][index];
+
+}
+
+
+/* =====================================================
+   선택하지 않은 카드 제거
+===================================================== */
+
+function removeUnselectedCards() {
+
+    document
+        .querySelectorAll(".card-wrap")
+        .forEach(wrap => {
+
+            if(wrap.dataset.selected !== "true") {
+                wrap.remove();
+            }
+
+        });
+
+}
+
+
+/* =====================================================
+   현재 사용자 성향 수집
+===================================================== */
+
+function getUserProfile() {
+
+    const profile = {};
+
+
+    if(document.getElementById("useBlood").checked) {
+
+        const type =
+            document.getElementById("bloodType").value;
+
+        if(type && bloodTraits[type]) {
+
+            profile.bloodType = type;
+
+            profile.bloodTraits =
+                bloodTraits[type].traits;
+
+            profile.bloodPreferences =
+                bloodTraits[type].preferences;
+
+        }
+
+    }
+
+
+    if(document.getElementById("useMbti").checked) {
+
+        const letters = [
+
+            document.querySelector(
+                'input[name="mbtiEI"]:checked'
+            )?.value,
+
+            document.querySelector(
+                'input[name="mbtiSN"]:checked'
+            )?.value,
+
+            document.querySelector(
+                'input[name="mbtiTF"]:checked'
+            )?.value,
+
+            document.querySelector(
+                'input[name="mbtiJP"]:checked'
+            )?.value
+
+        ];
+
+        if(letters.every(Boolean)) {
+
+            profile.mbti =
+                letters.join("");
+
+            profile.mbtiTraits =
+                letters.flatMap(
+                    letter => mbtiTraits[letter] || []
+                );
+
+        }
+
+    }
+
+
+    if(document.getElementById("useZodiac").checked) {
+
+        const zodiac =
+            document.getElementById("zodiac").value;
+
+        if(zodiac) {
+
+            profile.zodiac = zodiac;
+
+            profile.zodiacTraits =
+                zodiacTraits[zodiac] || [];
+
+        }
+
+    }
+
+
+    if(document.getElementById("useTime").checked) {
+
+        const now = new Date();
+
+        profile.time =
+            now.toLocaleString("ko-KR");
+
+        profile.hour =
+            now.getHours();
+
+    }
+
+
+    if(document.getElementById("useLocation").checked) {
+
+        profile.location =
+            document.getElementById("currentLocation")
+            .textContent;
+
+    }
+
+
+    if(document.getElementById("useDestination").checked) {
+
+        const destination = getResolvedDestination();
+
+        if (destination) {
+            profile.destination = destination.name;
+            profile.destinationSource = destination.source || "unknown";
+
+            if (destination.lat != null && destination.lon != null) {
+                profile.destinationCoordinates =
+                    `${destination.lat.toFixed(4)}, ${destination.lon.toFixed(4)}`;
+            }
+
+            if (destination.timezone) {
+                profile.destinationTimezone = destination.timezone;
+            }
+
+            if (destination.localTime) {
+                profile.destinationLocalTime = destination.localTime;
+            }
+
+            if (destination.weatherText) {
+                profile.destinationWeather = destination.weatherText;
+            }
+
+            if (destination.temperature != null) {
+                profile.destinationTemperature = destination.temperature;
+            }
+
+            if (destination.apparentTemperature != null) {
+                profile.destinationApparentTemperature =
+                    destination.apparentTemperature;
+            }
+
+            if (destination.precipitation != null) {
+                profile.destinationPrecipitation = destination.precipitation;
+            }
+
+            if (destination.windSpeed != null) {
+                profile.destinationWindSpeed = destination.windSpeed;
+            }
+        }
+
+    }
+
+
+    if(document.getElementById("useGender").checked) {
+
+        profile.gender =
+            document.getElementById("gender").value;
+
+    }
+
+
+    if(document.getElementById("useWeather").checked) {
+
+        profile.weather =
+            document.getElementById("weatherMain").textContent;
+
+        profile.weatherDetail =
+            document.getElementById("weatherDetail").textContent;
+
+    }
+
+
+    return profile;
+
+}
+
+
+
+/* =====================================================
+   질문 품질 / 목적지 자동 분석
+===================================================== */
+
+const destinationState = {
+    name: "",
+    source: "",
+    lat: null,
+    lon: null,
+    timezone: "",
+    localTime: "",
+    weatherText: "",
+    temperature: null,
+    apparentTemperature: null,
+    precipitation: null,
+    windSpeed: null,
+    updatedAt: null
+};
+
+let destinationResolveTimer = null;
+
+function questionQuality(question) {
+    const q = (question || "").trim();
+
+    if (!q) {
+        return {
+            valid: false,
+            score: 0,
+            reason: "질문이 비어 있습니다.",
+            missing: ["질문의 대상", "질문의 목적"]
+        };
+    }
+
+    // 한글/영문/숫자/공백만 있는 무의미한 짧은 문자열 방지
+    const compact = q.replace(/\s+/g, "");
+    const repeated = /^(.)(\1)+$/.test(compact);
+    const keyboardNoise = /^(qwerty|asdf|asdfgh|zxcv|zxcvbn|qwe|qweqwe|zxc|zcszc)+$/i.test(compact);
+
+    if (keyboardNoise || repeated) {
+        return {
+            valid: false,
+            score: 0,
+            reason: "질문의 의미를 확인하기 어려운 입력입니다.",
+            missing: ["무엇에 대한 질문인지", "무엇을 알고 싶은지"]
+        };
+    }
+
+    if (compact.length < 3) {
+        return {
+            valid: false,
+            score: 10,
+            reason: "질문이 너무 짧아 의도를 정확히 판단하기 어렵습니다.",
+            missing: ["질문의 대상", "원하는 답변"]
+        };
+    }
+
+    let score = 40;
+
+    if (/[?？]/.test(q)) score += 15;
+    if (/(뭐|무엇|어디|언제|왜|어떻게|할까|좋을까|추천|알려|가능|괜찮|살까|먹을까|갈까|볼까)/.test(q)) score += 25;
+    if (/(오늘|내일|이번주|이번 주|주말|저녁|점심|아침|지금|9월|10월|여행|영화|음식|메뉴|제품|구매|옷|코디)/.test(q)) score += 15;
+
+    return {
+        valid: score >= 55,
+        score: Math.min(score, 100),
+        reason: score >= 55
+            ? "질문의 기본 의도가 확인됩니다."
+            : "질문의 목적이 충분히 구체적이지 않습니다.",
+        missing: score >= 55 ? [] : ["질문의 구체적인 목적"]
+    };
+}
+
+function getResolvedDestination() {
+    const manual = document.getElementById("destination")?.value.trim();
+
+    if (manual) {
+        return {
+            ...destinationState,
+            name: manual,
+            source: "직접 입력"
+        };
+    }
+
+    if (destinationState.name) return destinationState;
+
+    return null;
+}
+
+function extractDestinationFromText(text) {
+    const q = (text || "").trim();
+    if (!q) return "";
+
+    // 대표적인 자연어 패턴
+    const patterns = [
+        /(?:에서|으로|에|의|가는|가서|여행|관광|방문|놀러)\s*([가-힣A-Za-z][가-힣A-Za-z0-9·\-\s]{1,30}?)(?=\s*(?:오늘|내일|이번|뭐|무엇|어디|추천|갈까|가볼|뭐하지|뭐\s*하지|에서|으로|에|의|$))/i,
+        /([가-힣A-Za-z][가-힣A-Za-z0-9·\-\s]{1,25})\s*(?:여행|관광|여행지)/i
+    ];
+
+    for (const p of patterns) {
+        const m = q.match(p);
+        if (m && m[1]) {
+            let value = m[1].trim()
+                .replace(/^(오늘|내일|지금|이번주|이번 주)\s*/,"")
+                .replace(/\s+(뭐|무엇|어디|추천|갈까|가볼까).*$/,"")
+                .trim();
+
+            if (value.length >= 2) return value;
+        }
+    }
+
+    // 자주 쓰는 도시/지역을 질문 전체에서 감지
+    const places = [
+        "서울","부산","대전","대구","광주","울산","세종",
+        "제주","제주도","인천","수원","전주","경주","강릉",
+        "도쿄","오사카","교토","후쿠오카","삿포로","타이베이",
+        "타이페이","홍콩","싱가포르","방콕","뉴욕","파리","런던"
+    ];
+
+    const found = places.find(place => q.includes(place));
+    return found || "";
+}
+
+async function geocodeDestination(name) {
+    const url =
+        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&accept-language=ko&q=${encodeURIComponent(name)}`;
+
+    const response = await fetch(url, {
+        headers: { "Accept": "application/json" }
+    });
+
+    if (!response.ok) throw new Error("목적지 검색 실패");
+
+    const data = await response.json();
+
+    if (!data.length) throw new Error("목적지를 찾지 못했습니다.");
+
+    return {
+        name: data[0].display_name || name,
+        shortName: name,
+        lat: Number(data[0].lat),
+        lon: Number(data[0].lon)
+    };
+}
+
+async function getDestinationWeather(lat, lon) {
+    const url =
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+        `&current=temperature_2m,apparent_temperature,precipitation,rain,weather_code,wind_speed_10m` +
+        `&timezone=auto`;
+
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("목적지 날씨 조회 실패");
+
+    return await response.json();
+}
+
+function formatLocalTime(timezone) {
+    try {
+        return new Intl.DateTimeFormat("ko-KR", {
+            timeZone: timezone,
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            weekday: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        }).format(new Date());
+    } catch {
+        return new Date().toLocaleString("ko-KR");
+    }
+}
+
+function updateDestinationUI() {
+    const d = getResolvedDestination();
+
+    const status = document.getElementById("destinationStatus");
+    const time = document.getElementById("destinationTime");
+    const weather = document.getElementById("destinationWeather");
+    const temp = document.getElementById("destinationTemp");
+    const coords = document.getElementById("destinationCoords");
+    const advice = document.getElementById("destinationAdvice");
+
+    if (!d) {
+        status.textContent = "목적지 미설정";
+        time.textContent = "-";
+        weather.textContent = "-";
+        temp.textContent = "-";
+        coords.textContent = "-";
+        advice.textContent = "목적지를 설정하면 목적지 기준 시간과 날씨를 조회합니다.";
+        return;
+    }
+
+    status.textContent =
+        `🎯 ${d.shortName || d.name} · ${d.source || "자동 인식"}`;
+
+    time.textContent =
+        d.timezone ? formatLocalTime(d.timezone) : (d.localTime || "-");
+
+    weather.textContent = d.weatherText || "조회 중...";
+    temp.textContent =
+        d.temperature != null
+            ? `${d.temperature}℃${d.apparentTemperature != null ? ` / 체감 ${d.apparentTemperature}℃` : ""}`
+            : "-";
+
+    coords.textContent =
+        d.lat != null && d.lon != null
+            ? `${d.lat.toFixed(4)}, ${d.lon.toFixed(4)}`
+            : "-";
+
+    if (/비|소나기|뇌우/.test(d.weatherText || "")) {
+        advice.textContent =
+            "🌧 목적지에 비가 예상/관측되므로 실내 활동, 우산, 이동 안전성을 우선 고려합니다.";
+    } else if (/눈/.test(d.weatherText || "")) {
+        advice.textContent =
+            "❄️ 목적지에 눈이 예상/관측되므로 보온과 이동 안전성을 우선 고려합니다.";
+    } else if (/맑음|구름/.test(d.weatherText || "")) {
+        advice.textContent =
+            "☀️ 목적지 날씨가 비교적 양호하므로 야외 활동도 적극적으로 고려할 수 있습니다.";
+    } else {
+        advice.textContent =
+            "목적지의 현재 환경을 기준으로 현실적인 추천을 조정합니다.";
+    }
+}
+
+async function resolveDestination(forceQuestionExtraction = false) {
+    if (!document.getElementById("useDestination").checked) return;
+
+    const input = document.getElementById("destination");
+    let name = input.value.trim();
+    let source = name ? "직접 입력" : "";
+
+    if (!name && (forceQuestionExtraction || document.getElementById("question").value.trim())) {
+        name = extractDestinationFromText(
+            document.getElementById("question").value.trim()
+        );
+        if (name) {
+            input.value = name;
+            source = "질문에서 자동 인식";
+        }
+    }
+
+    if (!name) {
+        updateDestinationUI();
+        return;
+    }
+
+    const status = document.getElementById("destinationStatus");
+    status.textContent = `🔎 ${name} 목적지 검색 중...`;
+
+    try {
+        const geo = await geocodeDestination(name);
+        const weatherData = await getDestinationWeather(geo.lat, geo.lon);
+        const current = weatherData.current || {};
+
+        const wt = weatherCodeText(current.weather_code);
+
+        destinationState.name = geo.name;
+        destinationState.shortName = name;
+        destinationState.source = source || "자동 인식";
+        destinationState.lat = geo.lat;
+        destinationState.lon = geo.lon;
+        destinationState.timezone = weatherData.timezone || "";
+        destinationState.localTime =
+            formatLocalTime(weatherData.timezone || "UTC");
+        destinationState.weatherText = `${wt.icon} ${wt.text}`;
+        destinationState.temperature = current.temperature_2m;
+        destinationState.apparentTemperature = current.apparent_temperature;
+        destinationState.precipitation = current.precipitation;
+        destinationState.windSpeed = current.wind_speed_10m;
+        destinationState.updatedAt = new Date().toISOString();
+
+        updateDestinationUI();
+
+    } catch (error) {
+        status.textContent =
+            `⚠️ "${name}"의 위치/날씨 정보를 확인하지 못했습니다.`;
+        console.warn(error);
+    }
+}
+
+function extractDestinationFromQuestion(force = false) {
+    const input = document.getElementById("destination");
+    if (!force && input.value.trim()) return;
+
+    const found = extractDestinationFromText(
+        document.getElementById("question").value.trim()
+    );
+
+    if (found) {
+        input.value = found;
+        resolveDestination(true);
+    } else {
+        document.getElementById("destinationStatus").textContent =
+            "질문에서 목적지를 찾지 못했습니다. 직접 입력할 수 있습니다.";
+    }
+}
+
+function debounceResolveDestination() {
+    clearTimeout(destinationResolveTimer);
+    destinationResolveTimer = setTimeout(() => {
+        extractDestinationFromQuestion(false);
+    }, 700);
+}
+
+/* =====================================================
+   질문 의도 / 답변 품질을 AI 프롬프트에 포함
+===================================================== */
+
+function buildQuestionAnalysisText(question) {
+    const quality = questionQuality(question);
+    const destination = getResolvedDestination();
+
+    const intentHints = [];
+
+    if (/(갈까|할까|살까|먹을까|볼까|고를까|선택)/.test(question)) {
+        intentHints.push("선택 또는 행동 결정을 원하는 질문");
+    }
+
+    if (/(추천|뭐 먹|뭐하지|어디|무엇)/.test(question)) {
+        intentHints.push("구체적인 추천을 원하는 질문");
+    }
+
+    if (/(왜|이유|원인)/.test(question)) {
+        intentHints.push("원인 또는 이유를 알고 싶은 질문");
+    }
+
+    if (/(주의|조심|문제|위험)/.test(question)) {
+        intentHints.push("주의점 또는 위험요소를 알고 싶은 질문");
+    }
+
+    if (!intentHints.length) {
+        intentHints.push("질문의 목적을 문맥으로 판단하되 근거 없이 확대하지 말 것");
+    }
+
+    return `
+[질문 품질 검사]
+유효성: ${quality.valid ? "정상" : "불명확"}
+신뢰도 점수: ${quality.score}/100
+판정: ${quality.reason}
+부족한 정보: ${quality.missing.length ? quality.missing.join(", ") : "없음"}
+
+[질문 의도 추정]
+${intentHints.join("\n")}
+
+[목적지]
+${destination ? JSON.stringify({
+    name: destination.shortName || destination.name,
+    source: destination.source,
+    coordinates: destination.lat != null ? `${destination.lat}, ${destination.lon}` : null,
+    timezone: destination.timezone,
+    localTime: destination.timezone ? formatLocalTime(destination.timezone) : null,
+    weather: destination.weatherText,
+    temperature: destination.temperature,
+    apparentTemperature: destination.apparentTemperature,
+    precipitation: destination.precipitation,
+    windSpeed: destination.windSpeed
+}, null, 2) : "목적지 없음"}
+
+[질문 해석 강제 규칙]
+- 질문의 의도를 임의로 만들어내지 말 것.
+- 질문에 없는 사실, 목적, 선택지를 추측하여 단정하지 말 것.
+- 선택 질문이면 실제 선택지를 확인하고 비교할 것.
+- 추천 질문이면 실제 대상을 구체화할 것.
+- 목적지가 있으면 목적지의 시간/날씨를 우선 사용하고 현재 위치의 정보와 섞지 말 것.
+- 목적지가 질문에 포함되어 있으면 별도 목적지 입력을 다시 요구하지 말 것.
+- 목적지가 직접 입력되었으면 질문에서 추출한 목적지보다 직접 입력값을 우선할 것.
+- 정보가 부족해 현실적인 추천이 불가능하면 필요한 추가 질문을 먼저 제시할 것.
+- 타로 카드 의미 때문에 현실의 사실을 만들어내지 말 것.
+`;
+}
+
+
+/* =====================================================
+   질문 분야 분석
+===================================================== */
+
+function analyzeQuestion(question) {
+
+    const q = question.toLowerCase();
+
+    if(
+        /영화|드라마|넷플릭스|볼까|감상/.test(q)
+    )
+        return "영화·영상";
+
+    if(
+        /먹|밥|음식|메뉴|점심|저녁|아침|식사|맛집/.test(q)
+    )
+        return "음식";
+
+    if(
+        /옷|의류|패션|코디|입을|착용|원피스|바지|셔츠/.test(q)
+    )
+        return "패션";
+
+    if(
+        /여행|관광|놀러|여행지|목적지|어디 갈|어디갈|갈까|가볼|방문/.test(q)
+    )
+        return "여행·장소";
+
+    if(
+        /살까|구매|제품|상품|노트북|휴대폰|태블릿|살것/.test(q)
+    )
+        return "상품 선택";
+
+    if(
+        /할까|해야|뭐하지|무엇을|지금 할/.test(q)
+    )
+        return "행동 선택";
+
+    return "일반 질문";
+
+}
+
+
+/* =====================================================
+   성향을 질문 분야에 연결
+===================================================== */
+
+function makeTraitConnection(profile,domain) {
+
+    let lines = [];
+
+    const allTraits = [
+
+        ...(profile.bloodTraits || []),
+        ...(profile.mbtiTraits || []),
+        ...(profile.zodiacTraits || [])
+
+    ];
+
+
+    if(!allTraits.length)
+        return "선택된 개인 성향 정보가 없습니다.";
+
+
+    const unique =
+        [...new Set(allTraits)];
+
+
+    lines.push(
+        `사용자에게 적용되는 성향: ${unique.join(", ")}`
+    );
+
+
+    if(domain === "영화·영상") {
+
+        if(
+            unique.some(x =>
+                ["자유로움","개성","새로운 경험","독창적","모험"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "영화에서는 액션, SF, 어드벤처, 스펙터클, 독특한 소재의 작품에 긍정적인 방향으로 반영합니다."
+            );
+
+        }
+
+        if(
+            unique.some(x =>
+                ["꼼꼼함","분석적","완성도","논리적"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "영화의 작품성, 전개 완성도, 논리적인 스토리를 중요하게 반영합니다."
+            );
+
+        }
+
+        if(
+            unique.some(x =>
+                ["감성적","감정적","분위기","상상력"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "감성적인 분위기와 캐릭터 몰입도를 추가로 고려합니다."
+            );
+
+        }
+
+    }
+
+
+    if(domain === "음식") {
+
+        if(
+            unique.some(x =>
+                ["자유로움","개성","새로운 경험","독창적"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "음식에서는 평소와 다른 이색 메뉴와 개성 있는 맛을 우선 고려합니다."
+            );
+
+        }
+
+        if(
+            unique.some(x =>
+                ["신중함","안정성","실용적","꼼꼼함"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "실패 가능성이 낮고 검증된 메뉴와 균형 잡힌 선택을 높게 평가합니다."
+            );
+
+        }
+
+    }
+
+
+    if(domain === "패션") {
+
+        if(
+            unique.some(x =>
+                ["개성","자유로움","독창적"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "패션에서는 개성 있는 포인트와 새로운 스타일을 고려합니다."
+            );
+
+        }
+
+        if(
+            unique.some(x =>
+                ["실용적","꼼꼼함","안정성"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "착용 편의성, 실용성, 깔끔한 조합을 중요하게 봅니다."
+            );
+
+        }
+
+    }
+
+
+    if(domain === "여행·장소") {
+
+        if(
+            unique.some(x =>
+                ["새로운 경험","모험","자유로움","활동적"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "새로운 장소와 체험형 관광지를 우선 고려합니다."
+            );
+
+        }
+
+        if(
+            unique.some(x =>
+                ["신중함","안정성","계획적","실용적"].includes(x)
+            )
+        ) {
+
+            lines.push(
+                "이동 편의성, 안전성, 일정 관리가 쉬운 장소를 높게 평가합니다."
+            );
+
+        }
+
+    }
+
+
+    return lines.join("\n");
+
+}
+
+
+/* =====================================================
+   시간 현실성
+===================================================== */
+
+function getTimeConstraint() {
+
+    const destination = getResolvedDestination();
+
+    let now = new Date();
+
+    if (destination?.timezone) {
+        const parts = new Intl.DateTimeFormat("en-US", {
+            timeZone: destination.timezone,
+            hour: "numeric",
+            hour12: false
+        }).formatToParts(now);
+
+        const hourPart = parts.find(p => p.type === "hour");
+        const hour = Number(hourPart?.value ?? 12);
+
+        if(hour >= 0 && hour < 5) {
+            return `
+목적지 현지 시간이 새벽 ${hour}시대입니다.
+일반적인 관광지, 상점, 공원, 야외 산책로의 이용 가능성을 낮게 평가하세요.
+24시간 운영 여부와 안전성을 우선 고려하세요.
+목적지 현지 시간을 기준으로 판단하세요.
+`;
+        }
+
+        if(hour >= 22) {
+            return `
+목적지 현지 시간이 늦은 밤(${hour}시대)입니다.
+영업시간, 귀가 가능성, 이동거리와 안전성을 고려하세요.
+목적지 현지 시간을 기준으로 판단하세요.
+`;
+        }
+
+        return `
+목적지 현지 시간은 ${hour}시대입니다.
+목적지 현지 시간을 기준으로 이용 가능한 활동을 판단하세요.
+`;
+    }
+
+    const hour = now.getHours();
+
+    if(hour >= 0 && hour < 5) {
+        return `
+현재 시간이 새벽입니다.
+일반적인 관광지, 상점, 공원, 야외 산책로는 추천 우선순위를 낮추고
+24시간 운영 여부와 안전성을 우선 고려하세요.
+`;
+    }
+
+    if(hour >= 22) {
+        return `
+현재 시간이 늦은 밤입니다.
+영업시간과 귀가 가능성, 안전성을 고려하세요.
+`;
+    }
+
+    return `
+현재 시간대에는 일반적인 외출 및 활동이 가능한 것으로 보고 판단하세요.
+`;
+}
+
+
+/* =====================================================
+   날씨 현실성
+===================================================== */
+
+function getWeatherConstraint() {
+
+    const destination = getResolvedDestination();
+
+    if (destination && destination.weatherText) {
+        const text = destination.weatherText;
+
+        if(/비|소나기|뇌우/.test(text)) {
+            return `
+목적지에 현재 비/소나기/뇌우가 표시됩니다.
+야외 활동의 우선순위를 낮추고 실내 활동을 높게 평가하세요.
+여행은 우산, 이동 안전성, 미끄럼 위험과 실제 이용 가능성을 고려하세요.
+음식은 따뜻한 국물·면류 등도 고려할 수 있지만 사용자의 취향과 질문을 우선하세요.
+`;
+        }
+
+        if(/눈/.test(text)) {
+            return `
+목적지에 눈이 표시됩니다.
+이동 안전성, 보온, 미끄럼 위험을 중요하게 고려하세요.
+`;
+        }
+
+        return `
+목적지 현재 날씨는 ${text}입니다.
+목적지 날씨를 기준으로 야외/실내 활동의 적합성을 판단하세요.
+`;
+    }
+
+    if(!document.getElementById("useWeather").checked)
+        return "날씨 정보가 선택되지 않았습니다.";
+
+    const text =
+        document.getElementById("weatherMain").textContent;
+
+    if(/비|소나기|뇌우/.test(text)) {
+        return `
+현재 비가 오는 환경이라면 야외 활동의 우선순위를 낮추고 실내 활동을 높게 평가하세요.
+`;
+    }
+
+    if(/눈/.test(text)) {
+        return `
+현재 눈이 오는 환경이라면 이동 안전성과 보온을 중요하게 고려하세요.
+`;
+    }
+
+    return `
+현재 날씨가 특별히 나쁘지 않다면 일반적인 야외 활동도 고려하세요.
+`;
+}
+
+
+/* =====================================================
+   통합 해석
+===================================================== */
+
+function makeIntegratedInterpretation() {
+
+    const question =
+        document.getElementById("question").value.trim();
+
+    const domain =
+        analyzeQuestion(question);
+
+    const profile =
+        getUserProfile();
+
+    const names =
+        selectedCards.map(card => card.name);
+
+    const traitConnection =
+        makeTraitConnection(profile,domain);
+
+
+    return `
+
+    <div class="flow">
+        ${names.join(" → ")}
+    </div>
+
+    <p>
+        <strong>질문 분야:</strong>
+        ${domain}
+    </p>
+
+    <p>
+        ${traitConnection.replace(/\n/g,"<br>")}
+    </p>
+
+    <p>
+        <strong>타로 흐름:</strong>
+        ${selectedCards.map((card,index) =>
+            `${getRole(index)}에서는 ${card.name}의 ${card.keywords}이 작용합니다.`
+        ).join("<br>")}
+    </p>
+
+    <p>
+        타로 카드는 질문의 방향을 제시하고,
+        선택된 사용자 성향은 그 방향을 개인에게 맞게 조정합니다.
+        시간과 날씨 등의 환경 정보가 선택되어 있다면
+        실제 현재 조건에 맞지 않는 추천은 낮은 우선순위로 판단해야 합니다.
+    </p>
+
+    `;
+
+}
+
+
+/* =====================================================
+   결과
+===================================================== */
+
+function showResults() {
+
+    const result =
+        document.getElementById("result");
+
+    result.innerHTML = "";
+
+    const integrated =
+        document.createElement("div");
+
+    integrated.className =
+        "result-card integrated";
+
+    integrated.innerHTML = `
+
+        <h3>
+            ✨ 카드 통합 해석
+        </h3>
+
+        ${makeIntegratedInterpretation()}
+
+    `;
+
+    result.appendChild(integrated);
+
+    document.getElementById("gptButton")
+        .disabled = false;
+
+    document.getElementById("searchButton")
+        .disabled = false;
+
+}
+
+
+/* =====================================================
+   카드 / 정보 변경 시 새로 준비
+===================================================== */
+
+function refreshCards() {
+
+    if(
+        document.getElementById("question")
+        .value.trim()
+    ) {
+
+        if(!selecting) {
+            createCards();
+        }
+
+    }
+
+}
+
+
+/* =====================================================
+   AI 프롬프트
+===================================================== */
+
+function buildAIPrompt() {
+
+    const question =
+        document.getElementById("question")
+        .value.trim();
+
+    const domain =
+        analyzeQuestion(question);
+
+    const profile =
+        getUserProfile();
+
+    const cardText =
+        selectedCards
+        .map((card,index) =>
+            `${index+1}번 카드: ${card.name} / ${card.keywords}`
+        )
+        .join("\n");
+
+
+    let positionText = "";
+
+    if(cardCount === 1) {
+
+        positionText =
+            "1번 카드: 현재 질문의 핵심";
+
+    }
+    else if(cardCount === 3) {
+
+        positionText = `
+1번 카드: 과거(시작된 계기)
+2번 카드: 현재(처한 현실)
+3번 카드: 미래(다가올 결과)
+`;
+
+    }
+    else {
+
+        positionText = `
+1번 카드: 과거(시작된 계기)
+2번 카드: 현재(처한 현실)
+3번 카드: 미래(다가올 결과)
+4번 카드: 장애물
+5번 카드: 조언
+`;
+
+    }
+
+
+    let profileText =
+        "선택된 사용자 정보 없음";
+
+    if(Object.keys(profile).length) {
+
+        profileText =
+            JSON.stringify(profile,null,2);
+
+    }
+
+
+    return `타로카드 해석을 해주세요.
+
+${buildQuestionAnalysisText(question)}
+
+[사용자 질문]
+${question}
+
+[자동 분석된 질문 분야]
+${domain}
+
+[선택된 사용자 정보]
+${profileText}
+
+[선택한 타로 카드]
+${cardText}
+
+[카드 위치]
+${positionText}
+
+[중요한 해석 원칙]
+
+0. 답변 전에 반드시 [질문 품질 검사]와 [질문 의도 추정]을 먼저 검토하세요.
+질문의 의미가 불명확하면 카드 의미를 이용해 질문 내용을 임의로 만들어내지 마세요.
+필요한 정보가 부족하면 부족한 정보를 명확히 말하고 추가 질문을 제시하세요.
+
+1. 먼저 질문이 실제로 무엇을 원하는지 파악하세요.
+
+2. 타로 카드의 일반적인 의미만 나열하지 마세요.
+
+3. 반드시 각각의 카드가 이 질문에서 어떤 역할을 하는지 설명하세요.
+
+4. 모든 카드를 하나의 흐름으로 연결하세요.
+
+5. 혈액형, MBTI, 별자리가 선택되어 있다면 단순히 정보를 반복하지 말고 각각의 성향을 실제 추천에 반영하세요.
+
+6. 혈액형은 하나의 성격으로 단순화하지 마세요.
+예를 들어 B형이라면 자유로움, 개성, 즉흥성, 새로운 경험 등의 여러 요소를 함께 고려하세요.
+
+7. MBTI도 선택된 네 가지 축을 각각 반영하세요.
+
+8. 별자리도 여러 성향 요소를 함께 고려하세요.
+
+9. 사용자 정보와 질문 분야의 관계를 반드시 설명하세요.
+
+10. 타로가 가장 중요한 방향을 제시하고 사용자 성향은 그 방향을 개인화하는 방식으로 해석하세요.
+
+11. 시간 정보가 있다면 현재 시간에 실제로 가능한 선택인지 판단하세요.
+
+12. 특히 새벽 시간이라면 일반적인 관광지, 공원, 산책로, 상점 등이 영업 또는 이용 가능한지 고려하고 안전하지 않거나 현실적으로 어려운 선택은 추천하지 마세요.
+
+13. 날씨 정보가 있다면 날씨에 맞게 추천을 변경하세요.
+
+14. 현위치와 목적지가 있다면 이동 거리와 현실적인 이동 가능성을 고려하세요.
+
+15. 패션 질문에서 성별 정보가 제공되었다면 반드시 성별 조건을 반영하세요.
+
+16. 사용자가 선택을 요구하는 질문이라면 추상적으로 끝내지 말고 실제 대상을 구체적으로 추천하세요.
+
+예를 들어 영화라면:
+"액션이 좋습니다"에서 끝내지 말고 실제 영화 제목 또는 영화 장르와 구체적인 후보를 제시하세요.
+
+음식이라면:
+"따뜻한 음식"에서 끝내지 말고 실제 메뉴명을 제시하세요.
+
+여행이라면:
+실제 장소를 제시하세요.
+
+패션이라면:
+실제 코디를 제시하세요.
+
+17. 사용자가 선택이나 추천을 요구한 질문일 때만 1순위, 2순위, 3순위를 제시하세요.
+질문이 불명확하면 임의의 추천 대상을 만들지 마세요.
+질문에 선택지가 없다면 존재하지 않는 선택지를 만들어내지 마세요.
+
+18. 각 추천에는 왜 사용자 성향 + 타로 + 현재 환경 + 목적지 현지 시간/날씨와 맞는지 설명하세요.
+
+19. 현실적으로 이용할 수 없는 선택은 추천하지 마세요.
+
+20. 타로는 미래를 확정하는 예언이 아니라 참고용 해석으로 설명하세요.
+
+[시간 현실성]
+${getTimeConstraint()}
+
+[날씨 현실성]
+${getWeatherConstraint()}
+
+다음 형식으로 답변하세요.
+
+① 질문 분석
+
+② 사용자 성향 분석
+
+③ 타로 카드별 해석
+
+④ 사용자 성향과 타로의 연결
+
+⑤ 현재 환경과의 연결
+
+⑥ 전체적인 흐름
+
+⑦ 구체적인 최종 추천
+
+🥇 1순위:
+🥈 2순위:
+🥉 3순위:
+
+각 추천에는 구체적인 대상과 이유를 적으세요.
+
+⑧ 현실적인 조언
+
+⑨ 주의할 점
+
+마지막:
+
+🔑 핵심 메시지
+
+질문에 대한 가장 현실적인 결론을 위에 선택사항에 고려해 타당한 이유를 제시하고
+
+짧은 문장으로 제시하세요.
+
+선택을 요구하는 질문이라면 핵심 메시지에도 반드시 실제 추천 대상을 넣으세요.
+
+
+`;
+
+}
+
+
+/* =====================================================
+   AI 열기
+===================================================== */
+
+async function openAIWithPrompt() {
+
+    if(
+        !document.getElementById("question")
+        .value.trim() ||
+        selectedCards.length === 0
+    ) {
+
+        alert("질문과 카드를 먼저 선택하세요.");
+
+        return;
+
+    }
+
+
+    const prompt =
+        buildAIPrompt();
+
+    const engine =
+        document.getElementById("aiEngine")
+        .value;
+
+
+    try {
+
+        await navigator.clipboard.writeText(prompt);
+
+    }
+    catch(error) {
+
+        const temp =
+            document.createElement("textarea");
+
+        temp.value = prompt;
+
+        document.body.appendChild(temp);
+
+        temp.select();
+
+        document.execCommand("copy");
+
+        temp.remove();
+
+    }
+
+
+    const urls = {
+
+        chatgpt:
+            "https://chatgpt.com/",
+
+        gemini:
+            "https://gemini.google.com/",
+
+        claude:
+            "https://claude.ai/",
+
+        copilot:
+            "https://copilot.microsoft.com/",
+
+        perplexity:
+            "https://www.perplexity.ai/"
+
+    };
+
+
+    window.open(
+        urls[engine],
+        "_blank"
+    );
+
+
+    alert(
+        "AI 질문이 클립보드에 복사되었습니다.\n\n" +
+        "열린 AI 창의 입력창에 Ctrl+V로 붙여넣으세요."
+    );
+
+}
+
+
+/* =====================================================
+   검색
+===================================================== */
+
+function searchAll() {
+
+    const question =
+        document.getElementById("question")
+        .value.trim();
+
+    if(
+        !question ||
+        selectedCards.length === 0
+    ) {
+
+        alert("질문과 카드를 먼저 선택하세요.");
+
+        return;
+
+    }
+
+
+    const cardNames =
+        selectedCards
+        .map(card => card.name)
+        .join(" ");
+
+    const domain =
+        analyzeQuestion(question);
+
+
+    const destination = getResolvedDestination();
+    const destinationText = destination?.shortName || destination?.name || "";
+
+    const searchText =
+        `${destinationText} ${question} ${domain} ${cardNames}`.trim();
+
+
+    const engine =
+        document.getElementById("searchEngine")
+        .value;
+
+
+    let url = "";
+
+
+    if(engine === "google") {
+
+        url =
+            "https://www.google.com/search?q=" +
+            encodeURIComponent(searchText);
+
+    }
+
+    else if(engine === "naver") {
+
+        url =
+            "https://search.naver.com/search.naver?query=" +
+            encodeURIComponent(searchText);
+
+    }
+
+    else if(engine === "daum") {
+
+        url =
+            "https://search.daum.net/search?q=" +
+            encodeURIComponent(searchText);
+
+    }
+
+    else if(engine === "bing") {
+
+        url =
+            "https://www.bing.com/search?q=" +
+            encodeURIComponent(searchText);
+
+    }
+
+    else if(engine === "duckduckgo") {
+
+        url =
+            "https://duckduckgo.com/?q=" + 
+            encodeURIComponent(searchText); 
+ 
+    } 
+ 
+ 
+    window.open(url,"_blank"); 
+ 
+} 
+ 
+ 
+/* ===================================================== 
+   생년월일 기본값 예시 
+   필요하면 삭제 가능 
+===================================================== */ 
+ 
+document.getElementById("birthYear").value = ""; 
+ 
+</script> 
+ 
+
+<script>
+/* =========================================================
+   /EXPERT /ELI10 AI 질문 생성
+   기존 📋 AI 질문 만들기 버튼은 유지합니다.
+   ✨ 로컬 해석 다시 생성 버튼은 삭제했습니다.
+
+   두 버튼 모두:
+   /AUTOPROMPT /INTENT /CONTEXT /CONSTRAINTS
+   /REDTEAM /SELFREFINE /ALT3
+   + 선택한 카드 + 사용자 질문
+   + 마지막에 선택한 명령(/EXPERT 또는 /ELI10)
+   을 포함한 질문을 자동 생성하고 복사합니다.
+========================================================= */
+function makeCommandPrompt(mode) {
+    const questionEl = document.getElementById("question");
+    const question = questionEl ? questionEl.value.trim() : "";
+
+    if (!question) {
+        alert("질문을 먼저 입력하세요.");
+        return;
+    }
+
+    let cardText = "선택한 카드 없음";
+
+    // 이 HTML의 실제 selectedCards 배열을 우선 사용
+    if (typeof selectedCards !== "undefined" &&
+        Array.isArray(selectedCards) &&
+        selectedCards.length) {
+        cardText = selectedCards.map((card, i) =>
+            `${i + 1}번 카드: ${card.name} / ${card.keywords || card.meaning || ""}`
+        ).join("\n");
+    }
+
+    const prompt = `타로카드 해석을 해주세요.
+
+[명령어]
+/AUTOPROMPT
+/INTENT
+/CONTEXT
+/CONSTRAINTS
+/REDTEAM
+/SELFREFINE
+/ALT3
+${mode}
+
+[사용자 질문]
+${question}
+
+[선택한 타로 카드]
+${cardText}
+
+[해석 지시]
+1. /AUTOPROMPT: 질문의 목적과 필요한 답변 구조를 자동으로 정리하세요.
+2. /INTENT: 사용자의 실제 질문 의도를 먼저 파악하세요. 근거 없이 확대 해석하지 마세요.
+3. /CONTEXT: 질문, 선택한 카드, 기존 질문 맥락을 함께 고려하세요.
+4. /CONSTRAINTS: 질문에 포함된 조건과 현실적인 제약을 반드시 지키세요.
+5. /REDTEAM: 답변 전에 잘못된 가정, 누락, 과도한 추론을 스스로 점검하세요.
+6. /SELFREFINE: 초안보다 더 정확하고 구체적인 최종 답변으로 스스로 다듬으세요.
+7. /ALT3: 선택이나 추천이 필요한 경우 현실적인 대안 3가지를 비교하세요.
+8. ${mode}: ${mode === "/EXPERT"
+        ? "전문가 수준으로 논리적이고 구체적으로 답변하세요."
+        : "어린이도 이해할 수 있을 정도로 쉬운 말로 설명하되 핵심 내용과 구체적인 답변은 유지하세요."}
+
+선택한 타로 카드를 반드시 실제 해석에 반영하세요.
+질문의 핵심에서 벗어나 임의의 조건이나 대상을 만들어내지 마세요.
+`;
+
+    navigator.clipboard.writeText(prompt).then(() => {
+        alert(`${mode} 질문이 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
+        openSelectedAI();
+    }).catch(() => {
+        const ta = document.createElement("textarea");
+        ta.value = prompt;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+        alert(`${mode} 질문이 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
+        openSelectedAI();
+    });
+}
+
+function openSelectedAI() {
+    const select = document.getElementById("aiEngine");
+    const engine = select ? select.value : "chatgpt";
+
+    const urls = {
+        chatgpt: "https://chatgpt.com/",
+        gemini: "https://gemini.google.com/",
+        claude: "https://claude.ai/",
+        copilot: "https://copilot.microsoft.com/",
+        perplexity: "https://www.perplexity.ai/"
+    };
+
+    window.open(urls[engine] || urls.chatgpt, "_blank");
+}
+</script>
+
+</body> 
+</html>
