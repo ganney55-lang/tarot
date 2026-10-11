@@ -886,6 +886,56 @@ button:disabled {
                 <div style="color: #cbd5e1;">정보와 데이터를 깔끔한 표 형태로 정리합니다.</div>
             </div>
         </div>
+ <!-- 11. socratex -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[SOCRATEX]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">socratex</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">소크라테스형</span>
+            </button>
+            <div class="ai-tooltip-box">
+                <div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">소크라테스</div>
+                <div style="color: #cbd5e1;">Don't explain [topic] yet.
+
+Ask me 7 questions that reveal my misunderstandings.
+Then teach me only the parts I got wrong..</div>
+            </div>
+        </div>
+
+        <!-- 12. CLARIFY -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[CLARIFY]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">CLARIFY</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">모호한 질문 확인</span>
+            </button>
+            <div class="ai-tooltip-box"><div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">CLARIFY</div><div style="color: #cbd5e1;">질문이 모호하거나 필수 정보가 부족하면 답하기 전에 핵심을 확인합니다.</div></div>
+        </div>
+
+        <!-- 13. ASSUMPTIONS -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[ASSUMPTIONS]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">ASSUMPTIONS</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">숨은 전제 확인</span>
+            </button>
+            <div class="ai-tooltip-box"><div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">ASSUMPTIONS</div><div style="color: #cbd5e1;">답변에 필요한 가정과 확인되지 않은 전제를 분리해 밝힙니다.</div></div>
+        </div>
+
+        <!-- 14. SELF-CHECK -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[SELF-CHECK]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">SELF-CHECK</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">누락·모순 점검</span>
+            </button>
+            <div class="ai-tooltip-box"><div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">SELF-CHECK</div><div style="color: #cbd5e1;">최종 답변에서 모순, 누락, 근거 없는 단정이 있는지 점검합니다.</div></div>
+        </div>
+
+        <!-- 15. UNCERTAINTY -->
+        <div style="position: relative;" class="ai-group">
+            <button class="ai-btn" data-cmd="[UNCERTAINTY]" onclick="toggleCommand(this)">
+                <span style="font-size: 13px; font-weight: bold; color: #3730a3;">UNCERTAINTY</span>
+                <span style="font-size: 10px; color: #6b7280; margin-top: 2px;">확실성 구분</span>
+            </button>
+            <div class="ai-tooltip-box"><div style="font-weight: bold; color: #93c5fd; margin-bottom: 4px;">UNCERTAINTY</div><div style="color: #cbd5e1;">확인된 사실, 추론, 추측을 구분하고 불확실한 부분을 명시합니다.</div></div>
+        </div>
 
     </div>
 
@@ -1472,12 +1522,16 @@ disabled
 📋 AI 질문 만들기
 </button>
 
-<button id="expertButton" class="gold-btn" type="button" onclick="makeCommandPrompt('/EXPERT')">
-전문답변
+<button id="professionalButton" class="gold-btn" type="button" onclick="makeCommandPrompt('professional')">
+전문형
 </button>
 
-<button id="eli10Button" class="gold-btn" type="button" onclick="makeCommandPrompt('/ELI10')">
-간편답변
+<button id="analysisButton" class="gold-btn" type="button" onclick="makeCommandPrompt('analysis')">
+전문 분석형
+</button>
+
+<button id="decisionButton" class="gold-btn" type="button" onclick="makeCommandPrompt('decision')">
+추천·의사결정형
 </button>
 
 
@@ -3696,20 +3750,42 @@ function makeCommandPrompt(mode) {
         return;
     }
 
-    let cardText = "선택한 카드 없음";
+    const presets = {
+        professional: {
+            title: "전문형",
+            commands: ["/EXPERT", "/VERIFY", "/UNCERTAINTY", "/SUMMARY"],
+            instruction: "전문적인 어조로 핵심 개념과 이유를 명확하게 설명하세요. 사실과 추론을 구분하고, 불확실한 부분은 단정하지 마세요. 마지막에 핵심 결론을 요약하세요."
+        },
+        analysis: {
+            title: "전문 분석형",
+            commands: ["/EXPERT", "/ANALYZE", "/ASSUMPTIONS", "/REDTEAM", "/SELF-CHECK", "/IMPROVE"],
+            instruction: "문제를 구조적으로 분석하세요. 숨은 전제와 정보의 공백을 밝히고, 반례·실패 가능성·논리적 오류를 점검한 뒤 분석을 개선하세요. 근거가 부족한 부분은 명확히 표시하세요."
+        },
+        decision: {
+            title: "추천·의사결정형",
+            commands: ["/COMPARE", "/CONSTRAINTS", "/RANK", "/VERIFY", "/ACTION-PLAN", "/SUMMARY"],
+            instruction: "가능한 선택지를 비교하고 장단점을 제시하세요. 사용자가 제공한 조건과 제약을 우선 반영하고, 평가 기준을 밝힌 뒤 순위를 매기세요. 최종 추천과 실행 순서를 제시하되, 정보가 부족하면 가정을 표시하세요."
+        }
+    };
+    const preset = presets[mode] || presets.professional;
 
-    // 이 HTML의 실제 selectedCards 배열을 우선 사용
-    if (typeof selectedCards !== "undefined" &&
-        Array.isArray(selectedCards) &&
-        selectedCards.length) {
-        cardText = selectedCards.map((card, i) =>
-            `${i + 1}번 카드: ${card.name} / ${card.keywords || card.meaning || ""}`
-        ).join("\n");
+    let cardText = "선택한 카드 없음";
+    if (typeof selectedCards !== "undefined" && Array.isArray(selectedCards) && selectedCards.length) {
+        cardText = selectedCards.map((card, i) => {
+            const name = card.name || card.title || "카드";
+            const keywords = card.keywords || card.meaning || "";
+            const orientation = card.reversed ? "역방향" : "정방향";
+            return `${i + 1}번 카드: ${name} / ${orientation} / ${keywords}`;
+        }).join("\n");
     }
 
     const prompt = `타로카드 해석을 해주세요.
 
-[명령어]
+[답변 유형]
+${preset.title}
+
+[명령어 조합]
+${preset.commands.join(" ")}
 /AUTOPROMPT
 /INTENT
 /CONTEXT
@@ -3717,7 +3793,6 @@ function makeCommandPrompt(mode) {
 /REDTEAM
 /SELFREFINE
 /ALT5
-${mode}
 
 [사용자 질문]
 ${question}
@@ -3726,24 +3801,16 @@ ${question}
 ${cardText}
 
 [해석 지시]
-0.카드의 순서는 과거>현재>미래>장애물>조언순입니다
-1. /AUTOPROMPT: 질문의 목적과 필요한 답변 구조를 자동으로 정리하세요.
-2. /INTENT: 사용자의 실제 질문 의도를 먼저 파악하세요. 근거 없이 확대 해석하지 마세요.
-3. /CONTEXT: 질문, 선택한 카드, 기존 질문 맥락을 함께 고려하세요.
-4. /CONSTRAINTS: 질문에 포함된 조건과 현실적인 제약을 반드시 지키세요.
-5. /REDTEAM: 답변 전에 잘못된 가정, 누락, 과도한 추론을 스스로 점검하세요.
-6. /SELFREFINE: 초안보다 더 정확하고 구체적인 최종 답변으로 스스로 다듬으세요.
-7. /ALT5: 선택이나 추천이 필요한 경우 현실적인 대안 5가지를 비교하세요.
-8. ${mode}: ${mode === "/EXPERT"
-        ? "전문가 수준으로 논리적이고 구체적으로 답변하세요."
-        : "어린이도 이해할 수 있을 정도로 쉬운 말로 설명하되 핵심 내용과 구체적인 답변은 유지하세요."}
-
-선택한 타로 카드를 반드시 실제 해석에 반영하세요.
-질문의 핵심에서 벗어나 임의의 조건이나 대상을 만들어내지 마세요.
+- 카드 순서는 선택한 배열 순서를 따르며, 5장 배열은 과거>현재>미래>장애물>조언 순서로 해석하세요.
+- 질문의 실제 의도를 파악하고 근거 없이 확대 해석하지 마세요.
+- 선택한 카드의 정방향·역방향을 반영하고, 카드 의미를 질문 맥락에 연결하세요.
+- 카드 해석은 확정적인 미래 예언이 아니라 성찰과 선택을 돕는 참고로 제시하세요.
+- ${preset.instruction}
+- 정보가 부족하면 사실을 만들어내지 말고 부족한 정보를 밝혀 주세요.
 `;
 
     navigator.clipboard.writeText(prompt).then(() => {
-        alert(`${mode} 질문이 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
+        alert(`${preset.title} 프롬프트가 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
         openSelectedAI();
     }).catch(() => {
         const ta = document.createElement("textarea");
@@ -3752,7 +3819,7 @@ ${cardText}
         ta.select();
         document.execCommand("copy");
         ta.remove();
-        alert(`${mode} 질문이 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
+        alert(`${preset.title} 프롬프트가 복사되었습니다.\nAI 사이트를 열어 붙여넣으세요.`);
         openSelectedAI();
     });
 }
