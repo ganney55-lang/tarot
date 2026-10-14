@@ -432,6 +432,18 @@ button {
     margin-bottom: 16px;
 }
 
+.orientation-badge {
+    display: inline-block;
+    margin: -8px 0 10px;
+    padding: 4px 10px;
+    border: 1px solid #f2d46c;
+    border-radius: 999px;
+    background: rgba(3, 21, 29, .75);
+    color: #ffe894;
+    font-size: 12px;
+    font-weight: bold;
+}
+
 .card-keywords {
     font-size: 14px;
     line-height: 1.6;
@@ -2178,6 +2190,8 @@ function createCards() {
                     ${card.name}
                 </div>
 
+                <div class="orientation-badge" id="orientation-${index}">방향 미정</div>
+
                 <div class="card-keywords">
                     ${card.keywords}
                 </div>
@@ -2232,6 +2246,8 @@ function chooseCard(index) {
     const card =
         availableCards[index];
 
+    // 카드를 선택하는 순간 정방향/역방향을 무작위로 결정합니다.
+    card.reversed = Math.random() < 0.5;
     selectedCards.push(card);
 
 
@@ -2253,10 +2269,17 @@ function chooseCard(index) {
 
         cardElement.classList.add("revealed");
 
+        const orientationBadge = document.getElementById(`orientation-${index}`);
+        if (orientationBadge) {
+            orientationBadge.textContent = card.reversed ? "↕ 역방향" : "↑ 정방향";
+            orientationBadge.style.color = card.reversed ? "#ffb4a2" : "#ffe894";
+            orientationBadge.style.borderColor = card.reversed ? "#ff8a75" : "#f2d46c";
+        }
+
         document.getElementById(
             `position-${index}`
         ).textContent =
-            getRole(selectedCards.length-1);
+            `${getRole(selectedCards.length-1)} · ${card.reversed ? "역방향" : "정방향"}`;
 
     },150);
 
@@ -3236,6 +3259,18 @@ function getWeatherConstraint() {
 }
 
 
+/* 정방향/역방향 공통 해석 보조 */
+function getOrientationText(card) {
+    return card && card.reversed ? "역방향" : "정방향";
+}
+
+function getOrientationGuidance(card) {
+    if (card && card.reversed) {
+        return "역방향: 카드의 핵심 주제가 막힘, 지연, 과도함 또는 내면화된 형태로 나타날 가능성을 살펴보되, 카드별 의미와 질문 맥락에 맞춰 단정하지 말고 해석합니다.";
+    }
+    return "정방향: 카드의 핵심 주제가 비교적 직접적이거나 자연스럽게 드러나는 흐름으로 해석합니다.";
+}
+
 /* =====================================================
    통합 해석
 ===================================================== */
@@ -3261,7 +3296,7 @@ function makeIntegratedInterpretation() {
     return `
 
     <div class="flow">
-        ${names.join(" → ")}
+        ${selectedCards.map(card => `${card.name} (${getOrientationText(card)})`).join(" → ")}
     </div>
 
     <p>
@@ -3276,7 +3311,7 @@ function makeIntegratedInterpretation() {
     <p>
         <strong>타로 흐름:</strong>
         ${selectedCards.map((card,index) =>
-            `${getRole(index)}에서는 ${card.name}의 ${card.keywords}이 작용합니다.`
+            `${getRole(index)}에서는 ${card.name} ${getOrientationText(card)}의 ${card.keywords}이 작용합니다. ${getOrientationGuidance(card)}`
         ).join("<br>")}
     </p>
 
@@ -3369,7 +3404,7 @@ function buildAIPrompt() {
     const cardText =
         selectedCards
         .map((card,index) =>
-            `${index+1}번 카드: ${card.name} / ${card.keywords}`
+            `${index+1}번 카드: ${card.name} / ${getOrientationText(card)} / ${card.keywords} / ${getOrientationGuidance(card)}`
         )
         .join("\n");
 
@@ -3651,7 +3686,7 @@ function searchAll() {
 
     const cardNames =
         selectedCards
-        .map(card => card.name)
+        .map(card => `타로카드 ${card.name} ${getOrientationText(card)}`)
         .join(" ");
 
     const domain =
@@ -3775,7 +3810,10 @@ function makeCommandPrompt(mode) {
             const name = card.name || card.title || "카드";
             const keywords = card.keywords || card.meaning || "";
             const orientation = card.reversed ? "역방향" : "정방향";
-            return `${i + 1}번 카드: ${name} / ${orientation} / ${keywords}`;
+            const directionNote = card.reversed
+                ? "역방향은 막힘·지연·과도함·내면화 가능성을 카드와 질문 맥락에 맞춰 검토"
+                : "정방향은 핵심 주제가 비교적 직접적으로 드러나는 흐름";
+            return `${i + 1}번 카드: ${name} / ${orientation} / ${keywords} / ${directionNote}`;
         }).join("\n");
     }
 
@@ -3803,7 +3841,7 @@ ${cardText}
 [해석 지시]
 - 카드 순서는 선택한 배열 순서를 따르며, 5장 배열은 과거>현재>미래>장애물>조언 순서로 해석하세요.
 - 질문의 실제 의도를 파악하고 근거 없이 확대 해석하지 마세요.
-- 선택한 카드의 정방향·역방향을 반영하고, 카드 의미를 질문 맥락에 연결하세요.
+- 각 카드에 표시된 정방향·역방향을 반드시 반영하세요. 역방향 카드는 정방향 의미를 그대로 반복하지 말고 막힘·지연·과도함·내면화 가능성을 카드별 의미와 질문 맥락에 맞춰 검토하세요. 단, 역방향을 무조건 부정적인 결과로 단정하지 마세요.
 - 카드 해석은 확정적인 미래 예언이 아니라 성찰과 선택을 돕는 참고로 제시하세요.
 - ${preset.instruction}
 - 정보가 부족하면 사실을 만들어내지 말고 부족한 정보를 밝혀 주세요.
